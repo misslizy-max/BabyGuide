@@ -1,5 +1,19 @@
 let sharedContext: AudioContext | null = null;
 
+const PIANO_BASE = "https://tonejs.github.io/audio/salamander/";
+const pianoSamples = [
+  { midi: 60, file: "C4.mp3" },
+  { midi: 63, file: "Ds4.mp3" },
+  { midi: 66, file: "Fs4.mp3" },
+  { midi: 69, file: "A4.mp3" },
+  { midi: 72, file: "C5.mp3" },
+  { midi: 75, file: "Ds5.mp3" },
+  { midi: 78, file: "Fs5.mp3" },
+  { midi: 81, file: "A5.mp3" },
+  { midi: 84, file: "C6.mp3" },
+] as const;
+let pianoPreloaded = false;
+
 async function context() {
   if (!sharedContext || sharedContext.state === "closed") sharedContext = new AudioContext();
   if (sharedContext.state === "suspended") await sharedContext.resume();
@@ -14,7 +28,39 @@ function envelope(gain: GainNode, start: number, duration: number, peak = 0.16) 
   gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
 }
 
-export async function playPianoNote(frequency: number, duration = 1.25) {
+function midiFromFrequency(frequency: number) {
+  return Math.round(69 + 12 * Math.log2(frequency / 440));
+}
+
+export function preloadPianoSamples() {
+  if (pianoPreloaded || typeof Audio === "undefined") return;
+  pianoPreloaded = true;
+  pianoSamples.forEach(({ file }) => {
+    const audio = new Audio(PIANO_BASE + file);
+    audio.preload = "auto";
+    audio.load();
+  });
+}
+
+async function playSampledPiano(frequency: number) {
+  if (typeof Audio === "undefined") return false;
+  const midi = midiFromFrequency(frequency);
+  const nearest = pianoSamples.reduce((best, sample) =>
+    Math.abs(sample.midi - midi) < Math.abs(best.midi - midi) ? sample : best,
+  );
+  const audio = new Audio(PIANO_BASE + nearest.file);
+  audio.preload = "auto";
+  audio.volume = 0.9;
+  audio.playbackRate = Math.pow(2, (midi - nearest.midi) / 12);
+  try {
+    await audio.play();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function playSynthPiano(frequency: number, duration = 1.25) {
   const ctx = await context();
   const now = ctx.currentTime;
   const master = ctx.createGain();
@@ -63,6 +109,12 @@ export async function playPianoNote(frequency: number, duration = 1.25) {
   hammer.start(now);
 }
 
+export async function playPianoNote(frequency: number, duration = 1.25) {
+  preloadPianoSamples();
+  const sampled = await playSampledPiano(frequency);
+  if (!sampled) await playSynthPiano(frequency, duration);
+}
+
 export async function playPop(size = 1) {
   const ctx = await context();
   const now = ctx.currentTime;
@@ -92,23 +144,14 @@ export async function playPop(size = 1) {
 
 export async function playReveal(open: boolean) {
   const notes = open ? [392, 523, 659] : [659, 523, 392];
-  const ctx = await context();
-  notes.forEach((note, i) => {
-    const start = ctx.currentTime + i * 0.08;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.value = note;
-    envelope(gain, start, 0.22, 0.08);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(start);
-    osc.stop(start + 0.24);
-  });
+  for (const note of notes) {
+    void playPianoNote(note, 0.35);
+    await new Promise((resolve) => setTimeout(resolve, 85));
+  }
 }
 
 export async function playSuccess() {
-  await playPianoNote(523.25, 0.4);
+  void playPianoNote(523.25, 0.4);
   setTimeout(() => void playPianoNote(659.25, 0.42), 120);
   setTimeout(() => void playPianoNote(783.99, 0.65), 240);
 }
