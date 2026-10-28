@@ -4,7 +4,8 @@ import { rhymes } from "../data/rhymes";
 import { stories, personalize } from "../data/stories";
 import { useApp } from "../hooks/useApp";
 import { Repeat } from "./Audio";
-import { SpeechButton } from "../components/UI";
+import { Confirm, SpeechButton } from "../components/UI";
+import { speakRussian } from "../utils/speech";
 function chime(pitch = 660) {
   try {
     const ctx = new AudioContext();
@@ -23,16 +24,12 @@ function chime(pitch = 660) {
   }
 }
 function say(text: string, onError: (m: string) => void) {
-  if (!("speechSynthesis" in window)) {
-    onError("Голос недоступен на устройстве");
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "ru-RU";
-  u.rate = 0.8;
-  u.onerror = () => onError("Не удалось озвучить. Можно назвать вместе.");
-  window.speechSynthesis.speak(u);
+  const started = speakRussian(text, {
+    rate: 0.76,
+    pitch: 1.05,
+    onError: () => onError("Не удалось озвучить. Можно назвать вместе."),
+  });
+  if (!started) onError("Голос недоступен на устройстве");
 }
 function ChildCards({ quiz = false }: { quiz?: boolean }) {
   const [category, setCategory] = useState("Животные"),
@@ -367,25 +364,30 @@ function ChildReading({ kind, id }: { kind: "rhyme" | "story"; id?: string }) {
   );
 }
 export function Child({ path, onExit }: { path: string; onExit: () => void }) {
-  const [gate, setGate] = useState(false),
-    [answer, setAnswer] = useState(""),
-    [gateError, setGateError] = useState(""),
-    [numbers, setNumbers] = useState([12, 7]);
+  const { data } = useApp();
+  const [confirmExit, setConfirmExit] = useState(false),
+    [holding, setHolding] = useState(false);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [screen, id] = path.replace(/^child\/?/, "").split("/");
-  const ref = useRef<HTMLDialogElement>(null);
-  function openGate() {
-    setNumbers([
-      11 + Math.floor(Math.random() * 9),
-      5 + Math.floor(Math.random() * 8),
-    ]);
-    setAnswer("");
-    setGateError("");
-    setGate(true);
+
+  function clearHold() {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    setHolding(false);
   }
-  useEffect(() => {
-    if (gate) ref.current?.showModal();
-    else ref.current?.close();
-  }, [gate]);
+
+  function startHold() {
+    clearHold();
+    setHolding(true);
+    holdTimer.current = setTimeout(() => {
+      holdTimer.current = null;
+      setHolding(false);
+      setConfirmExit(true);
+    }, 2000);
+  }
+
+  useEffect(() => () => clearHold(), []);
+
   const home = () => {
     location.hash = "child";
   };
@@ -399,9 +401,23 @@ export function Child({ path, onExit }: { path: string; onExit: () => void }) {
         >
           🏠
         </button>
-        <span>BabyGuide · играем вместе</span>
-        <button className="child-parent" onClick={openGate}>
-          Для взрослого 🔒
+        <span>BabyGuide · {data.profile.name || "малыш"}</span>
+        <button
+          className={"child-parent" + (holding ? " is-holding" : "")}
+          aria-label="Удерживайте две секунды, чтобы вернуться в режим родителя"
+          onPointerDown={startHold}
+          onPointerUp={clearHold}
+          onPointerCancel={clearHold}
+          onPointerLeave={clearHold}
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && !e.repeat) startHold();
+          }}
+          onKeyUp={(e) => {
+            if (e.key === "Enter" || e.key === " ") clearHold();
+          }}
+        >
+          Мама
+          <small>{holding ? "держите…" : "удерживать 2 сек"}</small>
         </button>
       </header>
       <main key={path} className="child-main">
@@ -451,50 +467,15 @@ export function Child({ path, onExit }: { path: string; onExit: () => void }) {
           </button>
         )}
       </main>
-      <dialog
-        ref={ref}
-        aria-label="Выход для взрослого"
-        onCancel={() => setGate(false)}
-        onClose={() => setGate(false)}
+      <Confirm
+        open={confirmExit}
+        title="Вернуться в режим родителя?"
+        action="Да, к маме"
+        onClose={() => setConfirmExit(false)}
+        onConfirm={onExit}
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (Number(answer) === numbers[0] + numbers[1]) {
-              setGate(false);
-              onExit();
-            } else setGateError("Ответ не совпал. Попробуйте ещё раз.");
-          }}
-        >
-          <h2>Для взрослого</h2>
-          <p>Чтобы выйти к настройкам и здоровью, решите пример:</p>
-          <label>
-            {numbers[0]} + {numbers[1]} =
-            <input
-              type="number"
-              inputMode="numeric"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              required
-              autoComplete="off"
-              aria-label="Ответ на пример"
-            />
-          </label>
-          <p className="form-error" role="alert">
-            {gateError}
-          </p>
-          <div className="actions">
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => setGate(false)}
-            >
-              Остаться играть
-            </button>
-            <button className="button">Выйти к маме</button>
-          </div>
-        </form>
-      </dialog>
+        Детский режим закроется. Вернуться к разделам для родителя?
+      </Confirm>
     </div>
   );
 }
