@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "./hooks/useApp";
 import { Link, Note } from "./components/UI";
-import { Home, ProfileScreen, Reminders } from "./screens/HomeProfile";
+import { ProfileScreen, Reminders } from "./screens/HomeProfile";
+import { Today } from "./screens/Today";
+import { AgeGuide } from "./screens/AgeGuide";
 import {
   Library,
   Favorites,
@@ -107,7 +109,10 @@ export default function App() {
   let content;
   switch (screen) {
     case "home":
-      content = <Home />;
+      content = <Today />;
+      break;
+    case "age-guide":
+      content = <AgeGuide />;
       break;
     case "more":
     case "library":
@@ -222,13 +227,15 @@ export default function App() {
   const active =
     screen === "home"
       ? "home"
-      : ["diary", "sleep-log", "growth", "temperature", "words"].includes(
+      : ["diary", "sleep-log", "growth", "temperature", "medicines", "words"].includes(
             screen,
           )
         ? "diary"
-        : screen === "recommendations"
-          ? "recommendations"
-          : "more";
+        : ["development", "games", "game", "age-guide", "recommendations"].includes(
+              screen,
+            )
+          ? "development"
+          : "library";
   return (
     <>
       <header className="topbar">
@@ -241,7 +248,7 @@ export default function App() {
             SOS
           </Link>
           <Link to="child" className="mode-switch">
-            🧸 Ребёнок
+            🧸 {data.profile.name || "Ребёнок"}
           </Link>
           <Link to="profile" className="profile-link">
             <span className="avatar">
@@ -267,10 +274,10 @@ export default function App() {
       </footer>
       <nav className="bottom-nav" aria-label="Основная навигация">
         {[
-          ["home", "⌂", "Главная"],
+          ["home", "⌂", "Сегодня"],
+          ["development", "✦", "Развитие"],
           ["diary", "▤", "Дневник"],
-          ["recommendations", "✧", "Рекомендации"],
-          ["more", "▦", "Ещё"],
+          ["library", "▦", "Библиотека"],
         ].map(([path, icon, label]) => (
           <a
             key={path}
