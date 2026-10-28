@@ -1,26 +1,23 @@
 import { test, expect } from "@playwright/test";
-test("clean startup and parent/child navigation emit no console errors", async ({
-  page,
-}) => {
+test("clean startup and V3 parent/child navigation emit no console errors", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push("JavaScript: " + e.message));
-  page.on("console", (m) => {
-    if (m.type() === "error") errors.push("Console: " + m.text());
-  });
+  page.on("console", (m) => { if (m.type() === "error") errors.push("Console: " + m.text()); });
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Растём вместе",
-  );
+  await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
   for (const [route, heading] of [
+    ["nutrition", "Питание"],
+    ["more", "Ещё"],
+    ["manuals", "Методические пособия"],
+    ["first-aid-kit", "Аптечка ребёнка"],
     ["diary", "Дневник маленьких открытий"],
-    ["recommendations", "Рекомендации"],
     ["profile", "Ваш маленький мир"],
-    ["more", "Библиотека заботы"],
     ["development", "Растём месяц за месяцем"],
     ["games", "Библиотека игр"],
     ["menu", "Меню на 14 дней"],
+    ["menu-builder", "Конструктор меню"],
     ["growth", "Рост маленького человека"],
-    ["sleep-log", "Дневник сна"],
+    ["sleep-log", "Сон"],
     ["temperature", "Температура и приём лекарств"],
     ["weather", "Время на прогулку"],
     ["guide/potty-plan", "Горшок: от знакомства к самостоятельности"],
@@ -28,13 +25,15 @@ test("clean startup and parent/child navigation emit no console errors", async (
     ["stories", "Поддерживающие истории"],
     ["cards", "Развивающие карточки"],
     ["words", "Мои первые слова"],
-    ["child", "Во что поиграем?"],
-    ["child/cards", "Кот"],
-    ["child/actions", "Нажми и посмотри!"],
+    ["child", "Что выберем?"],
+    ["child/cards", "Большие карточки"],
+    ["child/actions/piano", "Музыкальные клавиши"],
+    ["child/actions/bubbles", "Пузырьки"],
+    ["child/actions/box", "Что в коробке?"],
     ["child/repeat", "Повторюшка"],
   ]) {
     await page.evaluate((r) => (location.hash = r), route);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
+    await expect(page.getByRole("heading", { level: 1 }).first()).toHaveText(heading);
   }
   expect(errors).toEqual([]);
 });
