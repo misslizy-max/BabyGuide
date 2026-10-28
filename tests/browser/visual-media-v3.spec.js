@@ -64,11 +64,11 @@ test("rhymes and stories have illustrations plus natural-voice controls", async 
   await expect(page.locator(".story-progress-v3")).toBeVisible();
 });
 
-test("natural voice is primary and system voice is explicitly fallback", async ({ page }) => {
+test("mom voice clone is primary and system robot is not exposed", async ({ page }) => {
   await go(page, "voice-settings");
   await expect(page.locator(".natural-voice-card")).toBeVisible();
-  await expect(page.locator(".natural-voice-card")).toContainText(/нейронн/i);
-  await expect(page.locator("details.voice-fallback-settings")).toContainText("Запасной системный голос");
+  await expect(page.locator(".natural-voice-card")).toContainText(/мамин голос|Лиза/i);
+  await expect(page.locator(".voice-fallback-settings")).toHaveCount(0);
 });
 
 test("visual media screens do not overflow iPhone widths", async ({ page }) => {
