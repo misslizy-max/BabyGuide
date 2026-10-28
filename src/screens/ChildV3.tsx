@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CardArtV3 } from "../components/CardArtV3";
 import { Confirm, SpeechButton } from "../components/UI";
 import { learningCards, cardCategories } from "../data/cards";
 import { rhymes } from "../data/rhymes";
@@ -34,10 +35,10 @@ function KidIllustration({ kind }: { kind: "piano" | "bubbles" | "box" | "cards"
   if (kind === "bubbles")
     return (
       <svg className="kid-hero-svg" viewBox="0 0 420 210" role="img" aria-label="Большие и маленькие пузыри">
-        {[{x:90,y:105,r:45},{x:185,y:68,r:28},{x:280,y:118,r:54},{x:340,y:58,r:22}].map((b, i) => (
+        {[{ x: 90, y: 105, r: 45 }, { x: 185, y: 68, r: 28 }, { x: 280, y: 118, r: 54 }, { x: 340, y: 58, r: 22 }].map((bubble, i) => (
           <g key={i}>
-            <circle cx={b.x} cy={b.y} r={b.r} fill={["#DCEAF2","#E8D9EE","#E1EBD9"][i%3]} stroke="#FFFFFF" strokeWidth="6" />
-            <circle cx={b.x-b.r/3} cy={b.y-b.r/3} r={Math.max(5,b.r/7)} fill="#FFFFFFAA" />
+            <circle cx={bubble.x} cy={bubble.y} r={bubble.r} fill={["#DCEAF2", "#E8D9EE", "#E1EBD9"][i % 3]} stroke="#FFFFFF" strokeWidth="6" />
+            <circle cx={bubble.x - bubble.r / 3} cy={bubble.y - bubble.r / 3} r={Math.max(5, bubble.r / 7)} fill="#FFFFFFAA" />
           </g>
         ))}
       </svg>
@@ -72,25 +73,26 @@ function PianoGame() {
   const [progress, setProgress] = useState(0);
   const [active, setActive] = useState<number | null>(null);
 
-  async function tap(i: number) {
-    setActive(i);
-    await playPianoNote(notes[i].hz);
+  async function tap(index: number) {
+    setActive(index);
+    await playPianoNote(notes[index].hz);
     setTimeout(() => setActive(null), 180);
-    if (mode === "echo") {
-      if (target[progress] === i) {
-        const next = progress + 1;
-        if (next === target.length) {
-          await playSuccess();
-          setProgress(0);
-          setTarget((old) => [(old[0] + 1) % 7, (old[1] + 2) % 7]);
-        } else setProgress(next);
-      } else setProgress(0);
+    if (mode !== "echo") return;
+    if (target[progress] !== index) {
+      setProgress(0);
+      return;
     }
+    const next = progress + 1;
+    if (next === target.length) {
+      await playSuccess();
+      setProgress(0);
+      setTarget((old) => [(old[0] + 1) % 7, (old[1] + 2) % 7]);
+    } else setProgress(next);
   }
 
   async function demo() {
-    for (let i = 0; i < target.length; i += 1) {
-      await playPianoNote(notes[target[i]].hz, 0.35);
+    for (const index of target) {
+      await playPianoNote(notes[index].hz, 0.35);
       await new Promise((resolve) => setTimeout(resolve, 430));
     }
   }
@@ -107,19 +109,12 @@ function PianoGame() {
         <button className={mode === "free" ? "selected" : ""} onClick={() => setMode("free")}>Играть</button>
         <button className={mode === "echo" ? "selected" : ""} onClick={() => { setMode("echo"); setProgress(0); }}>Повтори 2 ноты</button>
       </div>
-      {mode === "echo" && (
-        <button className="kid-demo-button" onClick={() => void demo()}>▶ Послушать пример</button>
-      )}
+      {mode === "echo" && <button className="kid-demo-button" onClick={() => void demo()}>▶ Послушать пример</button>}
       <div className="kid-piano" aria-label="Пианино">
-        {notes.map((note, i) => (
-          <button
-            key={note.name}
-            className={`${note.tone} ${active === i ? "active" : ""}`}
-            onPointerDown={() => void tap(i)}
-            aria-label={`Нота ${note.name}`}
-          >
+        {notes.map((note, index) => (
+          <button key={note.name} className={`${note.tone} ${active === index ? "active" : ""}`} onPointerDown={() => void tap(index)} aria-label={`Нота ${note.name}`}>
             <span>{note.name}</span>
-            {mode === "echo" && target[progress] === i && <i aria-hidden="true">•</i>}
+            {mode === "echo" && target[progress] === index && <i aria-hidden="true">•</i>}
           </button>
         ))}
       </div>
@@ -143,12 +138,11 @@ function BubbleGame() {
   async function pop(id: number, size: number, label: string) {
     await playPop(size / 70);
     setBubbles((old) => old.filter((bubble) => bubble.id !== id));
-    if (task === "big") {
-      if (label === "большой") {
-        setMessage("Да! Это большой пузырь");
-        void playSuccess();
-      } else setMessage("Попробуй найти большой");
-    }
+    if (task !== "big") return;
+    if (label === "большой") {
+      setMessage("Да! Это большой пузырь");
+      void playSuccess();
+    } else setMessage("Попробуй найти большой");
   }
 
   return (
@@ -164,14 +158,8 @@ function BubbleGame() {
         <button className={task === "big" ? "selected" : ""} onClick={() => { setTask("big"); setMessage("Найди большой пузырь"); }}>Найди большой</button>
       </div>
       <div className="kid-bubble-field">
-        {bubbles.map((bubble, i) => (
-          <button
-            key={bubble.id}
-            className={`kid-bubble bubble-${i % 3}`}
-            style={{ width: bubble.size, height: bubble.size }}
-            onClick={() => void pop(bubble.id, bubble.size, bubble.label)}
-            aria-label={`${bubble.label} пузырь`}
-          >
+        {bubbles.map((bubble, index) => (
+          <button key={bubble.id} className={`kid-bubble bubble-${index % 3}`} style={{ width: bubble.size, height: bubble.size }} onClick={() => void pop(bubble.id, bubble.size, bubble.label)} aria-label={`${bubble.label} пузырь`}>
             <span />
           </button>
         ))}
@@ -224,7 +212,11 @@ function CardGame() {
 
   function sayCard() {
     if (!card) return;
-    const ok = speakRussian(`${card.word}. ${card.sound || ""}`, { rate: 0.72, pitch: 1.02, onError: () => setListeningError("Голос устройства недоступен") });
+    const ok = speakRussian(`${card.word}. ${card.sound || ""}`, {
+      rate: 0.72,
+      pitch: 1.02,
+      onError: () => setListeningError("Голос устройства недоступен"),
+    });
     if (!ok) setListeningError("Голос устройства недоступен");
   }
 
@@ -238,11 +230,13 @@ function CardGame() {
         <p>Рассматривайте вместе. Назовите предмет один раз и дайте время посмотреть.</p>
       </div>
       <div className="kid-category-scroll">
-        {cardCategories.map((item) => <button key={item} className={item === category ? "selected" : ""} onClick={() => { setCategory(item); setIndex(0); }}>{item}</button>)}
+        {cardCategories.map((item) => (
+          <button key={item} className={item === category ? "selected" : ""} onClick={() => { setCategory(item); setIndex(0); }}>{item}</button>
+        ))}
       </div>
       <button className="kid-picture-card" onClick={sayCard} aria-label={`Озвучить ${card.word}`}>
-        <div className={`kid-picture kid-picture-${index % 4}`} aria-hidden="true">
-          <span className="kid-picture-main">{card.icon}</span>
+        <div className={`kid-picture kid-picture-${index % 4}`}>
+          <CardArtV3 word={card.word} category={card.category} />
         </div>
         <strong>{card.word}</strong>
         <small>Нажми, чтобы услышать</small>
@@ -268,11 +262,11 @@ function Reading({ type, id }: { type: "rhyme" | "story"; id?: string }) {
         <h1>{item.title}</h1>
         <p className="kid-poem">{item.text}</p>
         <SpeechButton text={item.text} label="Слушать" />
-        <div className="kid-reading-steps">{item.movement.slice(0, 3).map((step, i) => <div key={step}><b>{i + 1}</b><span>{step}</span></div>)}</div>
+        <div className="kid-reading-steps">{item.movement.slice(0, 3).map((step, index) => <div key={step}><b>{index + 1}</b><span>{step}</span></div>)}</div>
       </section>
     );
   }
-  const story = stories.find((s) => s.id === id) || stories[0];
+  const story = stories.find((item) => item.id === id) || stories[0];
   const text = personalize(story.paragraphs[page], data.profile.name, data.profile.toy);
   return (
     <section className="kid-reading-v3">
@@ -304,7 +298,10 @@ export function ChildV3({ path, onExit }: { path: string; onExit: () => void }) 
   function startHold() {
     clearHold();
     setHolding(true);
-    hold.current = setTimeout(() => { setHolding(false); setConfirmExit(true); }, 1800);
+    hold.current = setTimeout(() => {
+      setHolding(false);
+      setConfirmExit(true);
+    }, 1800);
   }
   useEffect(() => () => clearHold(), []);
 
