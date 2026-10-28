@@ -11,6 +11,10 @@ import { SleepV3 } from "./screens/SleepV3";
 import { MenuBuilderV3 } from "./screens/MenuBuilderV3";
 import { FirstAidKit } from "./screens/FirstAidKit";
 import { ChildV3 } from "./screens/ChildV3";
+import { GuideDetailV3 } from "./screens/GuideDetailV3";
+import { ManualsV3 } from "./screens/ManualsV3";
+import { NutritionHomeV3 } from "./screens/NutritionHomeV3";
+import { MoreV3 } from "./screens/MoreV3";
 import {
   Library,
   Favorites,
@@ -20,7 +24,6 @@ import {
   Development,
   Games,
   GameDetail,
-  GuideDetail,
   Rhymes,
   RhymeDetail,
   Stories,
@@ -119,6 +122,9 @@ export default function App() {
     case "first-aid-kit":
       content = <FirstAidKit />;
       break;
+    case "manuals":
+      content = <ManualsV3 />;
+      break;
     case "routines":
       content = <Routines />;
       break;
@@ -126,8 +132,13 @@ export default function App() {
       content = <VoiceSettings />;
       break;
     case "more":
+      content = <MoreV3 />;
+      break;
     case "library":
       content = <Library />;
+      break;
+    case "nutrition":
+      content = <NutritionHomeV3 />;
       break;
     case "recommendations":
       content = <Recommendations />;
@@ -178,7 +189,7 @@ export default function App() {
       content = <GameDetail id={id} />;
       break;
     case "guide":
-      content = <GuideDetail key={id} id={id} />;
+      content = <GuideDetailV3 key={id} id={id} />;
       break;
     case "rhymes":
       content = <Rhymes />;
@@ -207,9 +218,9 @@ export default function App() {
     case "article":
       content =
         id === "guide-week" ? (
-          <GuideDetail id="speech-seven" />
+          <GuideDetailV3 id="speech-seven" />
         ) : id === "guide-home" ? (
-          <GuideDetail id="safe-home" />
+          <GuideDetailV3 id="safe-home" />
         ) : (
           <Article id={id} />
         );
@@ -221,14 +232,7 @@ export default function App() {
       content = <Reminders />;
       break;
     default:
-      content = [
-        "nutrition",
-        "sleep",
-        "speech",
-        "potty",
-        "guides",
-        "regressions",
-      ].includes(screen) ? (
+      content = ["sleep", "speech", "potty", "guides", "regressions"].includes(screen) ? (
         <Category id={screen} />
       ) : (
         <NotFound />
@@ -252,34 +256,14 @@ export default function App() {
           <span className="brand-dot">•</span>
         </Link>
         <div className="header-actions">
-          <Link to="article/red-flags" className="emergency-link">
-            SOS
-          </Link>
-          <Link to="child" className="mode-switch">
-            <span aria-hidden="true">◌</span> {data.profile.name || "Ребёнок"}
-          </Link>
-          <Link to="profile" className="profile-link">
-            <span className="avatar">
-              {data.profile.name ? data.profile.name[0].toUpperCase() : "Б"}
-            </span>
-            <span className="sr-only">Профиль ребёнка</span>
-          </Link>
+          <Link to="article/red-flags" className="emergency-link">SOS</Link>
+          <Link to="child" className="mode-switch"><span aria-hidden="true">◌</span> {data.profile.name || "Ребёнок"}</Link>
+          <Link to="profile" className="profile-link"><span className="avatar">{data.profile.name ? data.profile.name[0].toUpperCase() : "Б"}</span><span className="sr-only">Профиль ребёнка</span></Link>
         </div>
       </header>
-      {error && (
-        <div className="storage-warning">
-          <Note danger>
-            {error} <Link to="profile">Открыть профиль →</Link>
-          </Note>
-        </div>
-      )}
-      <main id="main" ref={main} tabIndex={-1} key={screen}>
-        {content}
-      </main>
-      <footer className="footer">
-        С заботой о маленьких и больших ♡<br />
-        При угрозе жизни — 112. Справочник не заменяет осмотр.
-      </footer>
+      {error && <div className="storage-warning"><Note danger>{error} <Link to="profile">Открыть профиль →</Link></Note></div>}
+      <main id="main" ref={main} tabIndex={-1} key={screen}>{content}</main>
+      <footer className="footer">С заботой о маленьких и больших ♡<br />При угрозе жизни — 112. Справочник не заменяет осмотр.</footer>
       <nav className="bottom-nav bottom-nav-v3" aria-label="Основная навигация">
         {[
           ["home", "⌂", "Сегодня"],
@@ -288,15 +272,7 @@ export default function App() {
           ["diary", "▤", "Дневник"],
           ["more", "•••", "Ещё"],
         ].map(([path, icon, label]) => (
-          <a
-            key={path}
-            href={"#" + path}
-            className={active === path ? "active" : ""}
-            aria-current={active === path ? "page" : undefined}
-          >
-            <span aria-hidden="true">{icon}</span>
-            {label}
-          </a>
+          <a key={path} href={"#" + path} className={active === path ? "active" : ""} aria-current={active === path ? "page" : undefined}><span aria-hidden="true">{icon}</span>{label}</a>
         ))}
       </nav>
     </>
