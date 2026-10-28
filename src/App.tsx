@@ -5,6 +5,7 @@ import { ProfileScreen, Reminders } from "./screens/HomeProfile";
 import { Today } from "./screens/Today";
 import { AgeGuide } from "./screens/AgeGuide";
 import { HealthHub } from "./screens/HealthHub";
+import { Routines } from "./screens/Routines";
 import {
   Library,
   Favorites,
@@ -117,6 +118,9 @@ export default function App() {
       break;
     case "health":
       content = <HealthHub />;
+      break;
+    case "routines":
+      content = <Routines />;
       break;
     case "more":
     case "library":
@@ -234,7 +238,7 @@ export default function App() {
             screen,
           )
         ? "diary"
-        : ["development", "games", "game", "age-guide", "recommendations"].includes(
+        : ["development", "games", "game", "age-guide", "recommendations", "routines"].includes(
               screen,
             )
           ? "development"
