@@ -3,6 +3,7 @@ import App from "./App";
 import { AppProvider } from "./hooks/useApp";
 import "./style.css";
 import "./product.css";
+import "./v2.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
