@@ -6,6 +6,7 @@ import "./product.css";
 import "./v2.css";
 import "./health.css";
 import "./routines.css";
+import "./guide-visuals.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
