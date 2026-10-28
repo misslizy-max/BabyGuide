@@ -20,6 +20,8 @@ import "./today-v3.css";
 import "./quick-add-v3.css";
 import "./voice-v3.css";
 import "./recipe-visual-v3.css";
+import "./recipes-v3.css";
+import "./menu-visual-v4.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
