@@ -18,6 +18,7 @@ import { NutritionHomeV3 } from "./screens/NutritionHomeV3";
 import { MoreV3 } from "./screens/MoreV3";
 import { RecipesV3, RecipeDetailV3, FortnightV3 } from "./screens/RecipesV3";
 import { SafeFoodV3 } from "./screens/SafeFoodV3";
+import { RhymesV3, RhymeDetailV3, StoriesV3, StoryDetailV3 } from "./screens/ReadingsV3";
 import {
   Library,
   Favorites,
@@ -27,10 +28,6 @@ import {
   Development,
   Games,
   GameDetail,
-  Rhymes,
-  RhymeDetail,
-  Stories,
-  StoryDetail,
   Sources,
   Cards,
   NotFound,
@@ -192,16 +189,16 @@ export default function App() {
       content = <GuideDetailV3 key={id} id={id} />;
       break;
     case "rhymes":
-      content = <Rhymes />;
+      content = <RhymesV3 />;
       break;
     case "rhyme":
-      content = <RhymeDetail id={id} />;
+      content = <RhymeDetailV3 id={id} />;
       break;
     case "stories":
-      content = <Stories />;
+      content = <StoriesV3 />;
       break;
     case "story":
-      content = <StoryDetail id={id} />;
+      content = <StoryDetailV3 id={id} />;
       break;
     case "cards":
       content = <Cards />;
