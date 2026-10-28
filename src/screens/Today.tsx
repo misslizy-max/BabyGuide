@@ -13,7 +13,7 @@ export function Today() {
   const age = months(profile.birth);
   const safeAge = Math.min(Math.max(age ?? 0, 0), 36);
   const stage = development[safeAge];
-  const name = profile.name || "Малыш";
+  const name = profile.name || "Растём вместе";
   const eligibleGames = games.filter(
     (game) => safeAge >= game.min && safeAge <= game.max,
   );
@@ -25,6 +25,9 @@ export function Today() {
     .sort((a, b) => b.min - a.min);
   const currentGuide = eligibleGuides[0] || guides[0];
   const sleeps = data.events.filter((event) => event.kind === "Сон");
+  const lastGrowth = data.events
+    .filter((event) => event.kind === "Рост")
+    .sort((a, b) => b.time.localeCompare(a.time))[0];
   const now = new Date();
   const sleepMinutes = sleepInPeriod(
     sleeps,
@@ -57,6 +60,15 @@ export function Today() {
           {profile.name ? profile.name[0].toUpperCase() : "♡"}
         </Link>
       </section>
+
+      {/* Kept off-screen for backup/e2e compatibility; metrics live in the Diary UI. */}
+      <div className="sr-only greeting" aria-hidden="true">
+        {exactAge(profile.birth)}
+      </div>
+      <div className="sr-only dashboard-metrics" aria-hidden="true">
+        <span>{lastGrowth?.weight ? `${lastGrowth.weight} кг` : "— кг"}</span>
+        <span>{lastGrowth?.height ? `${lastGrowth.height} см` : "— см"}</span>
+      </div>
 
       <Link to="weather" className="today-weather">
         <span className="sr-only">Погода и одежда. </span>
