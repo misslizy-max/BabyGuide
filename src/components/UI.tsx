@@ -11,6 +11,7 @@ import {
   savedRussianVoiceName,
   saveRussianVoiceName,
   speakRussian,
+  stopRussianSpeech,
 } from "../utils/speech";
 export const Link = ({
   to,
@@ -178,17 +179,17 @@ export function VoicePicker({ compact = false }: { compact?: boolean }) {
   if (!("speechSynthesis" in window)) return null;
   return (
     <label className={"voice-picker" + (compact ? " compact" : "")}>
-      <span>{compact ? "Голос" : "Русский голос для карточек и историй"}</span>
+      <span>{compact ? "Запасной голос" : "Системный голос · только запасной режим"}</span>
       <select
         value={selected}
         onChange={(event) => {
           const value = event.target.value;
           setSelected(value);
           saveRussianVoiceName(value);
-          speakRussian("Привет! Будем играть вместе.", { voiceName: value });
+          if (value) speakRussian("Привет! Это запасной системный голос.", { voiceName: value });
         }}
       >
-        <option value="">Авто · мягкий доступный</option>
+        <option value="">Не использовать системный голос</option>
         {voices.map((voice) => (
           <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
             {voice.name}
@@ -196,9 +197,7 @@ export function VoicePicker({ compact = false }: { compact?: boolean }) {
           </option>
         ))}
       </select>
-      {!voices.length && (
-        <small>Русские голоса появятся, если они установлены на устройстве.</small>
-      )}
+      <small>Обычная озвучка BabyGuide использует только живой нейронный голос. Этот список оставлен для ручной проверки запасного режима.</small>
     </label>
   );
 }
@@ -211,38 +210,25 @@ export function SpeechButton({
 }) {
   const [playing, setPlaying] = useState(false),
     [error, setError] = useState("");
-  useEffect(
-    () => () => {
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    },
-    [],
-  );
+  useEffect(() => () => stopRussianSpeech(), []);
   function speak() {
-    if (!("speechSynthesis" in window)) {
-      setError("Синтез речи недоступен. Текст можно прочитать вслух.");
-      return;
-    }
     if (playing) {
-      window.speechSynthesis.cancel();
+      stopRussianSpeech();
       setPlaying(false);
       return;
     }
     setError("");
     setPlaying(true);
     const started = speakRussian(text, {
-      rate: 0.78,
-      pitch: 1.04,
       onEnd: () => setPlaying(false),
       onError: () => {
         setPlaying(false);
-        setError(
-          "Не удалось озвучить. Для русского голоса может потребоваться загрузка голоса в настройках устройства.",
-        );
+        setError("Живой голос не установлен или не загрузился. Откройте «Ещё → Живой голос BabyGuide».");
       },
     });
     if (!started) {
       setPlaying(false);
-      setError("Синтез речи недоступен. Текст можно прочитать вслух.");
+      setError("Сначала установите живой голос: «Ещё → Живой голос BabyGuide». Механический голос автоматически включаться не будет.");
     }
   }
   return (
