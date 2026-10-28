@@ -26,7 +26,7 @@ function NaturalTalk({ text, label = "Слушать" }: { text: string; label?:
   useEffect(() => () => stopNaturalVoice(), []);
   async function speak() {
     if (!neuralVoiceEnabled()) {
-      setError("Сначала установите живой голос в разделе «Ещё → Живой голос».");
+      setError("Мамин голос выключен. Включите его в разделе «Ещё → Голос BabyGuide».");
       return;
     }
     setError("");
@@ -186,12 +186,12 @@ function CardGame() {
         setTimeout(() => void playAnimalSound(card.word), 450);
       } else {
         await playAnimalSound(card.word);
-        setMessage("Слышишь настоящий голос животного. Для названия установите «Живой голос» в разделе «Ещё».");
+        setMessage("Слышишь настоящий голос животного. Мамин голос для названия сейчас выключен.");
       }
       return;
     }
     if (!neuralVoiceEnabled()) {
-      setMessage("Механический голос отключён. Установите «Живой голос» в разделе «Ещё».");
+      setMessage("Мамин голос выключен. Включите его в разделе «Ещё → Голос BabyGuide».");
       return;
     }
     await speakNaturalRussian(`${card.word}${card.sound ? `. ${card.sound}` : ""}`);
