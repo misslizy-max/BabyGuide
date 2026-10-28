@@ -31,6 +31,19 @@ test("V3 profile persists and Today becomes personalized", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Записать событие/ })).toBeVisible();
 });
 
+test("V3 growth keeps last weight when a later measurement contains only another metric", async ({ page }) => {
+  await setupProfile(page);
+  await go(page, "growth");
+  await page.locator("[name=weight]").fill("10");
+  await page.locator("[name=height]").fill("77");
+  await page.getByRole("button", { name: "Сохранить измерение" }).click();
+  await page.locator("[name=head]").fill("46");
+  await page.getByRole("button", { name: "Сохранить измерение" }).click();
+  await expect(page.locator(".stats")).toContainText("10 кг");
+  await expect(page.locator(".stats")).toContainText("77 см");
+  await expect(page.locator(".stats")).toContainText("46 см");
+});
+
 test("V3 sleep timer survives reload and creates a tracked sleep", async ({ page }) => {
   await setupProfile(page);
   const start = "2026-10-28T10:30";
@@ -51,8 +64,8 @@ test("V3 menu builds seven days, replaces one meal and creates shopping list", a
   await go(page, "menu-builder");
   const introducedOnly = page.locator(".menu-rule-grid label").filter({ hasText: "Только введённые" }).locator("input");
   if (await introducedOnly.isChecked()) await introducedOnly.uncheck();
-  await page.getByRole("button", { name: /7\s*дней/ }).click();
-  await page.getByRole("button", { name: /Собрать меню на 7 дней/ }).click();
+  await page.getByRole("button", { name: "7 дней", exact: true }).click();
+  await page.getByRole("button", { name: "Собрать меню на 7 дней", exact: true }).click();
   await expect(page.locator(".menu-day-v3")).toHaveCount(7);
   await expect(page.locator(".menu-meal-v3 h3").first()).toBeVisible();
   const firstTitle = await page.locator(".menu-meal-v3 h3").first().textContent();
