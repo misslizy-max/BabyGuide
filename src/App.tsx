@@ -17,6 +17,7 @@ import { ManualsV3 } from "./screens/ManualsV3";
 import { NutritionHomeV3 } from "./screens/NutritionHomeV3";
 import { MoreV3 } from "./screens/MoreV3";
 import { RecipesV3, RecipeDetailV3, FortnightV3 } from "./screens/RecipesV3";
+import { SafeFoodV3 } from "./screens/SafeFoodV3";
 import {
   Library,
   Favorites,
@@ -35,7 +36,6 @@ import {
   NotFound,
 } from "./screens/Knowledge";
 import { Diary, Growth, Temperature, Medicines } from "./screens/Journal";
-import { SafeFood } from "./screens/Nutrition";
 import { Weather } from "./screens/Weather";
 import { Repeat, Words } from "./screens/Audio";
 function readRoute() {
@@ -180,7 +180,7 @@ export default function App() {
       content = <MenuBuilderVisual />;
       break;
     case "safe-food":
-      content = <SafeFood />;
+      content = <SafeFoodV3 />;
       break;
     case "games":
       content = <Games />;
