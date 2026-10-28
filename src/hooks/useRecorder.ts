@@ -5,7 +5,23 @@ export type RecordingState =
   | "listening"
   | "ready"
   | "error";
-export function useRecorder() {
+
+type RecorderOptions = {
+  maxDurationMs?: number;
+  silenceAfterSpeechMs?: number;
+  initialSilenceMs?: number;
+  soundThreshold?: number;
+};
+
+const defaults: Required<RecorderOptions> = {
+  maxDurationMs: 8000,
+  silenceAfterSpeechMs: 1200,
+  initialSilenceMs: 1000,
+  soundThreshold: 0.025,
+};
+
+export function useRecorder(options: RecorderOptions = {}) {
+  const config = { ...defaults, ...options };
   const [state, setState] = useState<RecordingState>("idle"),
     [error, setError] = useState(""),
     [blob, setBlob] = useState<Blob | null>(null);
@@ -16,6 +32,7 @@ export function useRecorder() {
     timeout = useRef<ReturnType<typeof setTimeout> | null>(null),
     generation = useRef(0);
   const alive = useRef(true);
+
   function release() {
     stream.current?.getTracks().forEach((t) => t.stop());
     stream.current = null;
@@ -26,12 +43,14 @@ export function useRecorder() {
     void audioContext.current?.close().catch(() => {});
     audioContext.current = null;
   }
+
   function stop() {
     if (recorder.current && recorder.current.state !== "inactive") {
       recorder.current.stop();
       release();
     } else release();
   }
+
   function discard() {
     generation.current++;
     if (recorder.current && recorder.current.state !== "inactive")
@@ -42,6 +61,7 @@ export function useRecorder() {
     setState("idle");
     setError("");
   }
+
   async function start() {
     if (state === "permission" || state === "listening") return;
     setBlob(null);
@@ -101,11 +121,13 @@ export function useRecorder() {
       };
       r.start();
       setState("listening");
-      timeout.current = setTimeout(stop, 8000);
-      // Analysis only, never connect the microphone to speakers.
+      timeout.current = setTimeout(stop, config.maxDurationMs);
+
+      // Analysis only: the microphone is never connected to the speakers.
       try {
         const context = new AudioContext();
         audioContext.current = context;
+        if (context.state === "suspended") await context.resume().catch(() => {});
         const source = context.createMediaStreamSource(media),
           analyser = context.createAnalyser();
         analyser.fftSize = 1024;
@@ -120,19 +142,20 @@ export function useRecorder() {
             samples.reduce((sum, x) => sum + ((x - 128) / 128) ** 2, 0) /
               samples.length,
           );
-          if (energy > 0.025) {
+          if (energy > config.soundThreshold) {
             spoke = true;
             lastSound = Date.now();
           }
+          const elapsed = Date.now() - started;
           if (
             spoke &&
-            Date.now() - lastSound > 1200 &&
-            Date.now() - started > 1000
+            elapsed >= config.initialSilenceMs &&
+            Date.now() - lastSound >= config.silenceAfterSpeechMs
           )
             stop();
         }, 100);
       } catch {
-        /* Recording still has an 8-second automatic stop and a visible stop button. */
+        /* Recording still has a maximum duration and a visible stop button. */
       }
     } catch (e) {
       release();
@@ -146,6 +169,7 @@ export function useRecorder() {
       }
     }
   }
+
   useEffect(
     () => () => {
       alive.current = false;
@@ -156,5 +180,6 @@ export function useRecorder() {
     },
     [],
   );
+
   return { state, error, blob, start, stop, discard };
 }
