@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useApp } from "./hooks/useApp";
 import { Link, Note } from "./components/UI";
 import { ProfileScreen, Reminders } from "./screens/HomeProfile";
-import { Today } from "./screens/Today";
+import { TodayV3 } from "./screens/TodayV3";
+import { QuickAddV3 } from "./screens/QuickAddV3";
 import { AgeGuide } from "./screens/AgeGuide";
 import { HealthHub } from "./screens/HealthHub";
 import { Routines } from "./screens/Routines";
@@ -111,7 +112,10 @@ export default function App() {
   let content;
   switch (screen) {
     case "home":
-      content = <Today />;
+      content = <TodayV3 />;
+      break;
+    case "quick-add":
+      content = <QuickAddV3 />;
       break;
     case "age-guide":
       content = <AgeGuide />;
@@ -239,7 +243,7 @@ export default function App() {
       );
   }
   const active =
-    screen === "home"
+    screen === "home" || screen === "quick-add"
       ? "home"
       : ["development", "games", "game", "age-guide", "recommendations", "routines", "voice-settings"].includes(screen)
         ? "development"
