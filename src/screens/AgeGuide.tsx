@@ -55,9 +55,14 @@ export function AgeGuide() {
             </article>
           ))}
         </div>
-        <Link to="development" className="secondary">
-          Все 8 областей развития →
-        </Link>
+        <div className="age-guide-actions">
+          <Link to="development" className="secondary">
+            Все 8 областей развития →
+          </Link>
+          <Link to="routines" className="secondary">
+            Рутины и самообслуживание →
+          </Link>
+        </div>
       </section>
 
       <section className="age-guide-section">
@@ -101,10 +106,24 @@ export function AgeGuide() {
           </p>
         ) : (
           <>
+            <div className="nutrition-visual" aria-label="Ориентир по развитию подачи еды">
+              <div className={safeAge >= 6 ? "active" : ""}>
+                <span>🥄</span><strong>Мягко</strong><small>Разминаемая текстура по готовности</small>
+              </div>
+              <b aria-hidden="true">→</b>
+              <div className={safeAge >= 8 ? "active" : ""}>
+                <span>🤲</span><strong>Руками</strong><small>Безопасные мягкие кусочки и самостоятельный захват</small>
+              </div>
+              <b aria-hidden="true">→</b>
+              <div className={safeAge >= 12 ? "active" : ""}>
+                <span>🍽</span><strong>Семейная еда</strong><small>Адаптируем текстуру, соль и форму подачи</small>
+              </div>
+            </div>
             <p>
-              В профиле отмечено введённых продуктов: <strong>{data.profile.introduced.length}</strong>.
-              BabyGuide может собрать меню только из подходящих по возрасту и
-              вашим ограничениям блюд.
+              Это не жёсткий календарь: ориентируйтесь на готовность и безопасную
+              текстуру. В профиле отмечено введённых продуктов:{" "}
+              <strong>{data.profile.introduced.length}</strong>. BabyGuide может
+              собрать меню из подходящих по возрасту и вашим ограничениям блюд.
             </p>
             <div className="age-guide-actions">
               <Link to="menu" className="button">Меню на 14 дней</Link>
@@ -113,6 +132,29 @@ export function AgeGuide() {
             </div>
           </>
         )}
+      </section>
+
+      <section className="age-guide-section">
+        <div className="age-guide-heading">
+          <span>🧺</span>
+          <div>
+            <small>БЫТОВЫЕ НАВЫКИ</small>
+            <h2>Самостоятельность растёт из маленького участия</h2>
+          </div>
+        </div>
+        <div className="routine-mini-flow" aria-label="Схема развития самостоятельности">
+          <span><b>1</b><strong>Показать</strong><small>Один понятный шаг</small></span>
+          <i>→</i>
+          <span><b>2</b><strong>Сделать вместе</strong><small>Помочь только там, где нужно</small></span>
+          <i>→</i>
+          <span><b>3</b><strong>Дать попробовать</strong><small>Без требования идеального результата</small></span>
+        </div>
+        <p>
+          В отдельном разделе собраны одевание, ложка и чашка, мытьё рук,
+          чистка зубов, уборка, выбор одежды и знакомство с горшком — с
+          возрастным фильтром и наглядными шагами.
+        </p>
+        <Link to="routines" className="button">Открыть рутины по возрасту →</Link>
       </section>
 
       <section className="age-guide-section">
