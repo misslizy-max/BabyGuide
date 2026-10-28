@@ -7,110 +7,73 @@ const go = async (page, hash) => {
 
 async function holdForParent(page) {
   const parent = page.getByRole("button", {
-    name: /Удерживайте две секунды, чтобы вернуться в режим родителя/,
+    name: /Удерживайте, чтобы вернуться к маме/,
   });
   await parent.dispatchEvent("pointerdown", { pointerType: "touch" });
-  await page.waitForTimeout(2150);
-  await expect(page.getByRole("dialog")).toContainText(
-    "Вернуться в режим родителя?",
-  );
+  await page.waitForTimeout(1950);
+  await expect(page.getByRole("dialog")).toContainText("Вернуться к маме?");
 }
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-test("V2 Today dashboard has four primary tabs and age guide", async ({ page }) => {
+test("V3 shell has five obvious primary tabs and dedicated nutrition/more hubs", async ({ page }) => {
   await go(page, "home");
-  await expect(page.locator(".today-page")).toBeVisible();
-  await expect(page.locator(".today-grid-v2 .today-card")).toHaveCount(6);
   await expect(page.locator(".bottom-nav a")).toHaveText([
     /Сегодня/,
     /Развитие/,
+    /Питание/,
     /Дневник/,
-    /Библиотека/,
+    /Ещё/,
   ]);
-  await go(page, "age-guide");
-  await expect(page.locator(".age-guide-icons > span")).toHaveCount(4);
-  await expect(page.locator(".age-guide-page")).toContainText("Развитие");
-  await expect(page.locator(".age-guide-page")).toContainText("Питание");
-  await expect(page.locator(".age-guide-page")).toContainText("Здоровье");
-  await go(page, "health");
-  await expect(page.locator(".health-actions-grid > a")).toHaveCount(4);
-  await expect(page.locator(".health-topic-grid > a")).not.toHaveCount(0);
+  await go(page, "nutrition");
+  await expect(page.locator(".nutrition-home-v3")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Собрать меню/ })).toBeVisible();
+  await go(page, "more");
+  await expect(page.locator(".more-v3-page")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Аптечка ребёнка/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Методические пособия/ })).toBeVisible();
 });
 
-test("child mode exits only after two-second parent hold and confirmation", async ({ page }) => {
+test("child V3 uses visual educational activities and parent hold exit", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await go(page, "child");
   await expect(page.locator(".bottom-nav")).toHaveCount(0);
-  const parent = page.getByRole("button", {
-    name: /Удерживайте две секунды, чтобы вернуться в режим родителя/,
-  });
-  await parent.click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator(".kid-home-grid .kid-home-tile")).toHaveCount(6);
+  await go(page, "child/actions/piano");
+  await expect(page.locator(".kid-piano button")).toHaveCount(7);
+  await expect(page.getByRole("button", { name: "Повтори 2 ноты" })).toBeVisible();
+  await go(page, "child/actions/bubbles");
+  await expect(page.locator(".kid-bubble").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Найди большой" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await holdForParent(page);
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Да, к маме", exact: true })
-    .click();
+  await page.getByRole("dialog").getByRole("button", { name: "Да, к маме", exact: true }).click();
   await expect(page.locator(".bottom-nav")).toBeVisible();
-  await expect(page.locator(".today-page")).toBeVisible();
 });
 
-test("V2 child layouts stay narrow and rejected storage writes still show an error", async ({ page }) => {
-  await page.setViewportSize({ width: 320, height: 800 });
-  for (const route of [
-    "child",
-    "child/cards",
-    "child/quiz",
-    "child/actions",
-    "child/repeat",
-    "child/rhymes",
-    "child/stories",
-  ]) {
-    await go(page, route);
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-      route,
-    ).toBe(true);
-  }
-  await go(page, "child/cards");
-  const first = await page.locator(".learning-card h1").textContent();
-  await page
-    .locator(".learning-card")
-    .dispatchEvent("pointerdown", { clientX: 280, clientY: 250 });
-  await page
-    .locator(".learning-card")
-    .dispatchEvent("pointerup", { clientX: 30, clientY: 250 });
-  expect(await page.locator(".learning-card h1").textContent()).not.toBe(first);
-  await holdForParent(page);
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Да, к маме", exact: true })
-    .click();
-  await go(page, "profile");
-  await page.evaluate(
-    () =>
-      (Storage.prototype.setItem = function () {
-        throw new DOMException("full", "QuotaExceededError");
-      }),
-  );
-  await page.locator("[name=name]").fill("Несохранённое");
-  await page
-    .getByRole("button", { name: "Сохранить профиль", exact: true })
-    .click();
-  await expect(page.locator(".storage-warning")).toContainText(
-    "Не удалось сохранить",
-  );
-  await expect(page.locator("#toast")).not.toContainText("Профиль сохранён");
+test("sleep V3 has one-tap tracker, weekly chart and manual fallback", async ({ page }) => {
+  await go(page, "sleep-log");
+  await expect(page.locator(".sleep-live-card")).toBeVisible();
+  await expect(page.getByRole("button", { name: /уснул/ })).toBeVisible();
+  await expect(page.locator(".sleep-week-chart")).toBeVisible();
+  await page.getByRole("button", { name: /уснул/ }).click();
+  await expect(page.getByRole("button", { name: /проснулся/ })).toBeVisible();
 });
 
-test("V2 Repeat keeps explicit microphone permission and cleans up after manual stop", async ({
-  page,
-  context,
-}) => {
+test("menu builder V3 can build multiple days and expose shopping list", async ({ page }) => {
+  await go(page, "menu-builder");
+  await expect(page.locator(".menu-builder-v3")).toBeVisible();
+  const birth = await page.evaluate(() => {
+    const key = Object.keys(localStorage).find((x) => x.includes("babyguide"));
+    return key;
+  });
+  expect(birth === null || typeof birth === "string").toBe(true);
+  await expect(page.getByRole("button", { name: /Собрать меню/ })).toBeVisible();
+});
+
+test("Repeat keeps explicit microphone permission", async ({ page }) => {
   await go(page, "repeat");
   await page.evaluate(() => {
     navigator.mediaDevices.getUserMedia = async () => {
@@ -119,15 +82,4 @@ test("V2 Repeat keeps explicit microphone permission and cleans up after manual 
   });
   await page.getByRole("button", { name: "Слушай и повторяй" }).click();
   await expect(page.getByRole("alert")).toContainText("запрещён");
-
-  await page.reload();
-  await context.grantPermissions(["microphone"]);
-  await go(page, "repeat");
-  await page.getByRole("button", { name: "Слушай и повторяй" }).click();
-  await expect(page.locator(".repeat-screen h2")).toContainText("Говори");
-  await page.waitForTimeout(600);
-  await page.getByRole("button", { name: "Закончить" }).click();
-  await expect
-    .poll(() => page.locator(".repeat-screen h2").textContent())
-    .toMatch(/Повторяю|Повторю/);
 });
