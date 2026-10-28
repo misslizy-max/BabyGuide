@@ -52,12 +52,14 @@ export function Today() {
           <h1>{name}</h1>
           <p className="today-age">{exactAge(profile.birth)}</p>
         </div>
-        <Link to="profile" className="today-profile" aria-label="Профиль ребёнка">
+        <Link to="profile" className="today-profile">
+          <span className="sr-only">Профиль ребёнка</span>
           {profile.name ? profile.name[0].toUpperCase() : "♡"}
         </Link>
       </section>
 
-      <Link to="weather" className="today-weather" aria-label="Погода и одежда">
+      <Link to="weather" className="today-weather">
+        <span className="sr-only">Погода и одежда. </span>
         <span className="today-weather-icon" aria-hidden="true">
           {weather.current?.precipitation ? "☂" : "☀"}
         </span>
