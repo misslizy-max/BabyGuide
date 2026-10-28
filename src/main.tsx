@@ -22,6 +22,7 @@ import "./voice-v3.css";
 import "./recipe-visual-v3.css";
 import "./recipes-v3.css";
 import "./menu-visual-v4.css";
+import "./safe-food-v3.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
