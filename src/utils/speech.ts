@@ -1,3 +1,9 @@
+import {
+  neuralVoiceEnabled,
+  speakNaturalRussian,
+  stopNaturalVoice,
+} from "../services/neuralVoice";
+
 const preferredVoiceHints = [
   "milena",
   "katya",
@@ -54,6 +60,11 @@ export function bestRussianVoice(preferredName = savedRussianVoiceName()) {
   );
 }
 
+export function stopRussianSpeech() {
+  stopNaturalVoice();
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
 export function speakRussian(
   text: string,
   options: {
@@ -64,7 +75,18 @@ export function speakRussian(
     onError?: () => void;
   } = {},
 ) {
+  // A deliberately selected system voice is used only for the fallback preview.
+  // Normal BabyGuide narration switches to the downloaded neural voice pack.
+  if (!options.voiceName && neuralVoiceEnabled()) {
+    void speakNaturalRussian(text, {
+      onEnd: options.onEnd,
+      onError: () => options.onError?.(),
+    });
+    return true;
+  }
+
   if (!("speechSynthesis" in window)) return false;
+  stopNaturalVoice();
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ru-RU";
