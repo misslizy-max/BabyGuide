@@ -22,7 +22,7 @@ export function HealthHub() {
       <Heading
         title="Здоровье"
         sub="Сначала действие, затем подробности · без попытки поставить диагноз"
-        back="library"
+        back="more"
       />
 
       <Note danger>
@@ -33,7 +33,7 @@ export function HealthHub() {
 
       <section className="health-actions-grid">
         <Link to="temperature">
-          <span>🌡</span>
+          <span>°</span>
           <strong>Температура</strong>
           <small>
             {lastTemperature?.temperature
@@ -42,9 +42,14 @@ export function HealthHub() {
           </small>
         </Link>
         <Link to="medicines">
-          <span>💊</span>
+          <span>Rx</span>
           <strong>Лекарства</strong>
           <small>Расчёт по весу и концентрации на упаковке</small>
+        </Link>
+        <Link to="first-aid-kit">
+          <span>+</span>
+          <strong>Аптечка</strong>
+          <small>Что держать дома по возрасту ребёнка</small>
         </Link>
         <Link to="growth">
           <span>↗</span>
@@ -81,12 +86,12 @@ export function HealthHub() {
                 {article.id === "fall"
                   ? "↘"
                   : article.id === "burn"
-                    ? "♨"
+                    ? "≈"
                     : article.id === "allergy"
                       ? "✦"
                       : article.id === "dehydration"
                         ? "◌"
-                        : "♡"}
+                        : "·"}
               </span>
               <div>
                 <strong>{article.title}</strong>
@@ -110,7 +115,8 @@ export function HealthHub() {
       </section>
 
       <div className="age-guide-actions">
-        <Link to="article/first-aid" className="button">Первая помощь</Link>
+        <Link to="first-aid-kit" className="button">Аптечка по возрасту</Link>
+        <Link to="article/first-aid" className="secondary">Первая помощь</Link>
         <Link to="diary" className="secondary">Дневник наблюдений</Link>
         <Link to="sources" className="secondary">Источники</Link>
       </div>
