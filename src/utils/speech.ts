@@ -38,7 +38,7 @@ export function saveRussianVoiceName(name: string) {
     if (name) localStorage.setItem(voiceStorageKey, name);
     else localStorage.removeItem(voiceStorageKey);
   } catch {
-    /* Voice selection is a convenience; speech still works without storage. */
+    /* Optional fallback preference only. */
   }
 }
 
@@ -51,12 +51,8 @@ export function bestRussianVoice(preferredName = savedRussianVoiceName()) {
   }
   return (
     preferredVoiceHints
-      .map((hint) =>
-        russian.find((voice) => voice.name.toLowerCase().includes(hint)),
-      )
-      .find(Boolean) ||
-    russian.find((voice) => voice.localService) ||
-    russian[0]
+      .map((hint) => russian.find((voice) => voice.name.toLowerCase().includes(hint)))
+      .find(Boolean) || russian.find((voice) => voice.localService) || russian[0]
   );
 }
 
@@ -75,9 +71,14 @@ export function speakRussian(
     onError?: () => void;
   } = {},
 ) {
-  // A deliberately selected system voice is used only for the fallback preview.
-  // Normal BabyGuide narration switches to the downloaded neural voice pack.
-  if (!options.voiceName && neuralVoiceEnabled()) {
+  // Normal BabyGuide narration never silently falls back to the robotic
+  // system voice. The system synthesizer is reserved for an explicitly
+  // selected fallback voice in Voice Settings.
+  if (!options.voiceName) {
+    if (!neuralVoiceEnabled()) {
+      options.onError?.();
+      return false;
+    }
     void speakNaturalRussian(text, {
       onEnd: options.onEnd,
       onError: () => options.onError?.(),
