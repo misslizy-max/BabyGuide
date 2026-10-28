@@ -62,6 +62,9 @@ export function AgeGuide() {
           <Link to="routines" className="secondary">
             Рутины и самообслуживание →
           </Link>
+          <Link to="voice-settings" className="secondary">
+            Настроить русский голос →
+          </Link>
         </div>
       </section>
 
