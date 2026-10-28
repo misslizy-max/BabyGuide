@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Favorite, Link, Note, SourceLinks } from "../components/UI";
 import { guides } from "../data/guides";
 import { useApp } from "../hooks/useApp";
@@ -44,6 +45,7 @@ export function GuideDetailV3({ id }: { id: string }) {
   const done = data.practice[guide.id] || [];
   const t = theme(guide.category);
   const progress = Math.round((done.length / Math.max(guide.practice.length,1))*100);
+  const progressStyle = { "--progress": `${progress*3.6}deg` } as CSSProperties;
 
   return (
     <div className="guide-v3-page">
@@ -85,7 +87,7 @@ export function GuideDetailV3({ id }: { id: string }) {
 
       <section id="guide-section-5" className="guide-chapter-v3">
         <div className="guide-chapter-head"><span>05</span><div><p className="eyebrow">ПРАКТИКУМ</p><h2>{guide.practice.length} дней без гонки</h2></div></div>
-        <div className="guide-progress-v3"><div className="guide-progress-ring" style={{"--progress":`${progress*3.6}deg`} as React.CSSProperties}><span>{progress}%</span></div><div><strong>{done.length} из {guide.practice.length}</strong><p>Отметки хранятся на этом устройстве. Пауза — тоже нормальный выбор.</p></div></div>
+        <div className="guide-progress-v3"><div className="guide-progress-ring" style={progressStyle}><span>{progress}%</span></div><div><strong>{done.length} из {guide.practice.length}</strong><p>Отметки хранятся на этом устройстве. Пауза — тоже нормальный выбор.</p></div></div>
         <div className="guide-practice-v3">{guide.practice.map((step,i)=><label key={step} className={done.includes(i)?"done":""}><input type="checkbox" checked={done.includes(i)} onChange={()=>update((d)=>({...d,practice:{...d.practice,[guide.id]:done.includes(i)?done.filter((x)=>x!==i):[...done,i]}}))}/><span>{i+1}</span><div><strong>День {i+1}</strong><p>{step}</p></div></label>)}</div>
       </section>
 
