@@ -5,6 +5,7 @@ import "./style.css";
 import "./product.css";
 import "./v2.css";
 import "./health.css";
+import "./routines.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
