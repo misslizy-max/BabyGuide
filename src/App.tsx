@@ -4,6 +4,7 @@ import { Link, Note } from "./components/UI";
 import { ProfileScreen, Reminders } from "./screens/HomeProfile";
 import { Today } from "./screens/Today";
 import { AgeGuide } from "./screens/AgeGuide";
+import { HealthHub } from "./screens/HealthHub";
 import {
   Library,
   Favorites,
@@ -114,6 +115,9 @@ export default function App() {
     case "age-guide":
       content = <AgeGuide />;
       break;
+    case "health":
+      content = <HealthHub />;
+      break;
     case "more":
     case "library":
       content = <Library />;
@@ -215,7 +219,6 @@ export default function App() {
         "sleep",
         "speech",
         "potty",
-        "health",
         "guides",
         "regressions",
       ].includes(screen) ? (
