@@ -6,9 +6,7 @@ const go = async (page, hash) => {
 };
 
 async function holdForParent(page) {
-  const parent = page.getByRole("button", {
-    name: /Удерживайте, чтобы вернуться к маме/,
-  });
+  const parent = page.getByRole("button", { name: /Мама/ });
   await parent.dispatchEvent("pointerdown", { pointerType: "touch" });
   await page.waitForTimeout(1950);
   await expect(page.getByRole("dialog")).toContainText("Вернуться к маме?");
@@ -20,13 +18,7 @@ test.beforeEach(async ({ page }) => {
 
 test("V3 shell has five obvious primary tabs and dedicated nutrition/more hubs", async ({ page }) => {
   await go(page, "home");
-  await expect(page.locator(".bottom-nav a")).toHaveText([
-    /Сегодня/,
-    /Развитие/,
-    /Питание/,
-    /Дневник/,
-    /Ещё/,
-  ]);
+  await expect(page.locator(".bottom-nav a")).toHaveText([/Сегодня/, /Развитие/, /Питание/, /Дневник/, /Ещё/]);
   await go(page, "nutrition");
   await expect(page.locator(".nutrition-home-v3")).toBeVisible();
   await expect(page.getByRole("link", { name: /Собрать меню/ })).toBeVisible();
@@ -36,17 +28,18 @@ test("V3 shell has five obvious primary tabs and dedicated nutrition/more hubs",
   await expect(page.getByRole("link", { name: /Методические пособия/ })).toBeVisible();
 });
 
-test("child V3 uses visual educational activities and parent hold exit", async ({ page }) => {
+test("child V4 uses full educational activities and parent hold exit", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await go(page, "child");
   await expect(page.locator(".bottom-nav")).toHaveCount(0);
-  await expect(page.locator(".kid-home-grid .kid-home-tile")).toHaveCount(6);
+  await expect(page.locator(".kid-home-grid .kid-home-tile")).toHaveCount(7);
   await go(page, "child/actions/piano");
-  await expect(page.locator(".kid-piano button")).toHaveCount(7);
-  await expect(page.getByRole("button", { name: "Повтори 2 ноты" })).toBeVisible();
+  await expect(page.locator(".piano-white-key")).toHaveCount(14);
+  await expect(page.locator(".piano-black-key")).toHaveCount(10);
+  await expect(page.getByRole("button", { name: "Повтори мелодию" })).toBeVisible();
   await go(page, "child/actions/bubbles");
-  await expect(page.locator(".kid-bubble").first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "Найди большой" })).toBeVisible();
+  await expect(page.locator(".bubble-v4")).toHaveCount(18);
+  await expect(page.getByRole("button", { name: "Большой", exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await holdForParent(page);
   await page.getByRole("dialog").getByRole("button", { name: "Да, к маме", exact: true }).click();
