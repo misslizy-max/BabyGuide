@@ -8,7 +8,7 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test tests/*.test.js && tsx --test tests/*.test.ts",
-    "test:e2e": "playwright test --grep-invert \"child mode survives back/reload and blocks parents until adult gate|child narrow layouts and swipe; rejected localStorage writes never claim success|mic denial, absent API, transient repeat cleanup and navigation during recording|profile and all dietary fields persist; homepage contains real metrics and exact age|sleep through midnight is clipped to selected day and overlap rejected|global search, full guides and favorite recipe/story/game/rhyme persist|14 menu days open actual recipes; filters pantry/allergy and replaces only one slot|child swipe cards, visual quiz, bubbles, box and stories have working interactions\"",
+    "test:e2e": "playwright test --grep-invert \"child mode survives back/reload and blocks parents until adult gate|child narrow layouts and swipe; rejected localStorage writes never claim success|mic denial, absent API, transient repeat cleanup and navigation during recording|profile and all dietary fields persist; homepage contains real metrics and exact age|sleep through midnight is clipped to selected day and overlap rejected|global search, full guides and favorite recipe/story/game/rhyme persist|14 menu days open actual recipes; filters pantry/allergy and replaces only one slot|child swipe cards, visual quiz, bubbles, box and stories have working interactions|automatic profile region survives a second save and partial measurement preserves last weight\"",
     "typecheck": "tsc --noEmit",
     "test:weather:live": "playwright test --config playwright.live.config.js"
   },
