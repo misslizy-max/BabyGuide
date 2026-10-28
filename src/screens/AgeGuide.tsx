@@ -63,7 +63,7 @@ export function AgeGuide() {
             Рутины и самообслуживание →
           </Link>
           <Link to="voice-settings" className="secondary">
-            Настроить русский голос →
+            Настроить мамин голос →
           </Link>
         </div>
       </section>
