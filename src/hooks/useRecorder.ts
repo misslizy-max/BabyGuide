@@ -11,6 +11,8 @@ type RecorderOptions = {
   silenceAfterSpeechMs?: number;
   initialSilenceMs?: number;
   soundThreshold?: number;
+  noiseCalibrationMs?: number;
+  noiseMultiplier?: number;
 };
 
 const defaults: Required<RecorderOptions> = {
@@ -18,6 +20,8 @@ const defaults: Required<RecorderOptions> = {
   silenceAfterSpeechMs: 1200,
   initialSilenceMs: 1000,
   soundThreshold: 0.025,
+  noiseCalibrationMs: 0,
+  noiseMultiplier: 2.4,
 };
 
 export function useRecorder(options: RecorderOptions = {}) {
@@ -133,20 +137,31 @@ export function useRecorder(options: RecorderOptions = {}) {
         analyser.fftSize = 1024;
         source.connect(analyser);
         const samples = new Uint8Array(analyser.fftSize);
+        const noiseSamples: number[] = [];
         let spoke = false,
           lastSound = Date.now(),
-          started = Date.now();
+          started = Date.now(),
+          dynamicThreshold = config.soundThreshold;
         interval.current = setInterval(() => {
           analyser.getByteTimeDomainData(samples);
           const energy = Math.sqrt(
             samples.reduce((sum, x) => sum + ((x - 128) / 128) ** 2, 0) /
               samples.length,
           );
-          if (energy > config.soundThreshold) {
+          const elapsed = Date.now() - started;
+          if (config.noiseCalibrationMs > 0 && elapsed <= config.noiseCalibrationMs) {
+            noiseSamples.push(energy);
+            const ordered = [...noiseSamples].sort((a, b) => a - b);
+            const floor = ordered[Math.floor((ordered.length - 1) * 0.2)] || 0;
+            dynamicThreshold = Math.max(
+              config.soundThreshold,
+              floor * config.noiseMultiplier + 0.004,
+            );
+          }
+          if (energy > dynamicThreshold) {
             spoke = true;
             lastSound = Date.now();
           }
-          const elapsed = Date.now() - started;
           if (
             spoke &&
             elapsed >= config.initialSilenceMs &&
