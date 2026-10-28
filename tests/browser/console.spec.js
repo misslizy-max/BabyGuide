@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-test("clean startup and V3 parent/child navigation emit no console errors", async ({ page }) => {
+test("clean startup and V4 parent/child navigation emit no console errors", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push("JavaScript: " + e.message));
   page.on("console", (m) => { if (m.type() === "error") errors.push("Console: " + m.text()); });
@@ -26,10 +26,10 @@ test("clean startup and V3 parent/child navigation emit no console errors", asyn
     ["cards", "Развивающие карточки"],
     ["words", "Мои первые слова"],
     ["child", "Что выберем?"],
-    ["child/cards", "Большие карточки"],
-    ["child/actions/piano", "Музыкальные клавиши"],
+    ["child/cards", "Карточки"],
+    ["child/actions/piano", "Моё пианино"],
     ["child/actions/bubbles", "Пузырьки"],
-    ["child/actions/box", "Что в коробке?"],
+    ["child/actions/box", "Коробочка"],
     ["child/repeat", "Повторюшка"],
   ]) {
     await page.evaluate((r) => (location.hash = r), route);
