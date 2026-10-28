@@ -11,6 +11,10 @@ import "./child-v3.css";
 import "./sleep-v3.css";
 import "./menu-v3.css";
 import "./kit-v3.css";
+import "./guide-v3.css";
+import "./manuals-v3.css";
+import "./nutrition-v3.css";
+import "./more-v3.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
