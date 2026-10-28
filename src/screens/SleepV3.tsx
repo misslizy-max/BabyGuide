@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Heading, Note, DeleteButton, values } from "../components/UI";
 import { useApp } from "../hooks/useApp";
 import { newEvent } from "../services/persistence";
-import { duration, formatDate, hours, localNow, months, sleepInPeriod, today } from "../utils/dates";
+import { duration, hours, localNow, months, sleepInPeriod, today } from "../utils/dates";
 
 const ACTIVE_KEY = "babyguide.sleep.active";
 
