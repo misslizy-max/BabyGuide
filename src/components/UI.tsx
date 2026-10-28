@@ -6,7 +6,12 @@ import {
   type FormEvent,
 } from "react";
 import { useApp } from "../hooks/useApp";
-import { speakRussian } from "../utils/speech";
+import {
+  russianVoices,
+  savedRussianVoiceName,
+  saveRussianVoiceName,
+  speakRussian,
+} from "../utils/speech";
 export const Link = ({
   to,
   children,
@@ -157,6 +162,44 @@ export function SourceLinks({ ids }: { ids: string[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+export function VoicePicker({ compact = false }: { compact?: boolean }) {
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]),
+    [selected, setSelected] = useState(savedRussianVoiceName);
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const refresh = () => setVoices(russianVoices());
+    refresh();
+    window.speechSynthesis.addEventListener("voiceschanged", refresh);
+    return () =>
+      window.speechSynthesis.removeEventListener("voiceschanged", refresh);
+  }, []);
+  if (!("speechSynthesis" in window)) return null;
+  return (
+    <label className={"voice-picker" + (compact ? " compact" : "")}>
+      <span>{compact ? "Голос" : "Русский голос для карточек и историй"}</span>
+      <select
+        value={selected}
+        onChange={(event) => {
+          const value = event.target.value;
+          setSelected(value);
+          saveRussianVoiceName(value);
+          speakRussian("Привет! Будем играть вместе.", { voiceName: value });
+        }}
+      >
+        <option value="">Авто · мягкий доступный</option>
+        {voices.map((voice) => (
+          <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
+            {voice.name}
+            {voice.localService ? " · на устройстве" : ""}
+          </option>
+        ))}
+      </select>
+      {!voices.length && (
+        <small>Русские голоса появятся, если они установлены на устройстве.</small>
+      )}
+    </label>
   );
 }
 export function SpeechButton({
