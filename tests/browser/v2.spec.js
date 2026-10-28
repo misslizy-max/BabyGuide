@@ -65,12 +65,8 @@ test("sleep V3 has one-tap tracker, weekly chart and manual fallback", async ({ 
 test("menu builder V3 can build multiple days and expose shopping list", async ({ page }) => {
   await go(page, "menu-builder");
   await expect(page.locator(".menu-builder-v3")).toBeVisible();
-  const birth = await page.evaluate(() => {
-    const key = Object.keys(localStorage).find((x) => x.includes("babyguide"));
-    return key;
-  });
-  expect(birth === null || typeof birth === "string").toBe(true);
   await expect(page.getByRole("button", { name: /Собрать меню/ })).toBeVisible();
+  await expect(page.locator(".menu-day-pills button")).toHaveCount(4);
 });
 
 test("Repeat keeps explicit microphone permission", async ({ page }) => {
