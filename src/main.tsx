@@ -19,6 +19,7 @@ import "./more-v3.css";
 import "./today-v3.css";
 import "./quick-add-v3.css";
 import "./voice-v3.css";
+import "./recipe-visual-v3.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
