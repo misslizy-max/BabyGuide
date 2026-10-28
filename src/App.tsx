@@ -7,6 +7,10 @@ import { AgeGuide } from "./screens/AgeGuide";
 import { HealthHub } from "./screens/HealthHub";
 import { Routines } from "./screens/Routines";
 import { VoiceSettings } from "./screens/VoiceSettings";
+import { SleepV3 } from "./screens/SleepV3";
+import { MenuBuilderV3 } from "./screens/MenuBuilderV3";
+import { FirstAidKit } from "./screens/FirstAidKit";
+import { ChildV3 } from "./screens/ChildV3";
 import {
   Library,
   Favorites,
@@ -25,23 +29,15 @@ import {
   Cards,
   NotFound,
 } from "./screens/Knowledge";
-import {
-  Diary,
-  Sleep,
-  Growth,
-  Temperature,
-  Medicines,
-} from "./screens/Journal";
+import { Diary, Growth, Temperature, Medicines } from "./screens/Journal";
 import {
   Recipes,
   RecipeDetail,
   Fortnight,
-  MenuBuilder,
   SafeFood,
 } from "./screens/Nutrition";
 import { Weather } from "./screens/Weather";
 import { Repeat, Words } from "./screens/Audio";
-import { Child } from "./screens/Child";
 function readRoute() {
   try {
     return decodeURIComponent(location.hash.slice(1) || "home");
@@ -96,7 +92,7 @@ export default function App() {
   }, [child, route]);
   if (child || route === "child" || route.startsWith("child/"))
     return (
-      <Child
+      <ChildV3
         path={route.startsWith("child") ? route : "child"}
         onExit={() => {
           try {
@@ -119,6 +115,9 @@ export default function App() {
       break;
     case "health":
       content = <HealthHub />;
+      break;
+    case "first-aid-kit":
+      content = <FirstAidKit />;
       break;
     case "routines":
       content = <Routines />;
@@ -146,7 +145,7 @@ export default function App() {
       content = <Growth />;
       break;
     case "sleep-log":
-      content = <Sleep />;
+      content = <SleepV3 />;
       break;
     case "temperature":
       content = <Temperature />;
@@ -167,7 +166,7 @@ export default function App() {
       content = <Fortnight />;
       break;
     case "menu-builder":
-      content = <MenuBuilder />;
+      content = <MenuBuilderV3 />;
       break;
     case "safe-food":
       content = <SafeFood />;
@@ -238,21 +237,13 @@ export default function App() {
   const active =
     screen === "home"
       ? "home"
-      : ["diary", "sleep-log", "growth", "temperature", "medicines", "words"].includes(
-            screen,
-          )
-        ? "diary"
-        : [
-              "development",
-              "games",
-              "game",
-              "age-guide",
-              "recommendations",
-              "routines",
-              "voice-settings",
-            ].includes(screen)
-          ? "development"
-          : "library";
+      : ["development", "games", "game", "age-guide", "recommendations", "routines", "voice-settings"].includes(screen)
+        ? "development"
+        : ["nutrition", "recipes", "recipe", "menu", "menu-builder", "safe-food"].includes(screen)
+          ? "nutrition"
+          : ["diary", "sleep-log", "growth", "temperature", "medicines", "words"].includes(screen)
+            ? "diary"
+            : "more";
   return (
     <>
       <header className="topbar">
@@ -265,7 +256,7 @@ export default function App() {
             SOS
           </Link>
           <Link to="child" className="mode-switch">
-            🧸 {data.profile.name || "Ребёнок"}
+            <span aria-hidden="true">◌</span> {data.profile.name || "Ребёнок"}
           </Link>
           <Link to="profile" className="profile-link">
             <span className="avatar">
@@ -289,12 +280,13 @@ export default function App() {
         С заботой о маленьких и больших ♡<br />
         При угрозе жизни — 112. Справочник не заменяет осмотр.
       </footer>
-      <nav className="bottom-nav" aria-label="Основная навигация">
+      <nav className="bottom-nav bottom-nav-v3" aria-label="Основная навигация">
         {[
           ["home", "⌂", "Сегодня"],
           ["development", "✦", "Развитие"],
+          ["nutrition", "○", "Питание"],
           ["diary", "▤", "Дневник"],
-          ["library", "▦", "Библиотека"],
+          ["more", "•••", "Ещё"],
         ].map(([path, icon, label]) => (
           <a
             key={path}
