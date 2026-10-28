@@ -11,6 +11,8 @@ export function Repeat({ child = false }: { child?: boolean }) {
     silenceAfterSpeechMs: 2800,
     initialSilenceMs: 5000,
     soundThreshold: 0.022,
+    noiseCalibrationMs: 900,
+    noiseMultiplier: 2.4,
   });
   const [mode, setMode] = useState("normal"),
     [playing, setPlaying] = useState(false),
@@ -87,9 +89,9 @@ export function Repeat({ child = false }: { child?: boolean }) {
         </div>
         <h2 role="status">{text}</h2>
         <p>
-          После нажатия я не тороплю: даю до 20 секунд на ответ, не обрываю
-          первые 5 секунд и жду около 3 секунд тишины после речи. Во время
-          повтора микрофон выключен.
+          После нажатия я сначала подстраиваюсь под фоновый шум комнаты, затем
+          спокойно жду ответ: до 20 секунд, без обрыва первых 5 секунд и около 3
+          секунд тишины после речи. Во время повтора микрофон выключен.
         </p>
         <div className="segmented">
           {[
