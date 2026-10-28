@@ -9,7 +9,6 @@ async function context() {
 }
 
 function gainEnvelope(
-  ctx: AudioContext,
   gain: GainNode,
   start: number,
   duration: number,
@@ -26,7 +25,7 @@ export async function playPianoNote(frequency: number, duration = 0.7) {
   const now = ctx.currentTime;
   const output = ctx.createGain();
   output.connect(ctx.destination);
-  gainEnvelope(ctx, output, now, duration, 0.15);
+  gainEnvelope(output, now, duration, 0.15);
 
   const partials = [
     [1, 1],
@@ -55,7 +54,7 @@ export async function playPop(size = 1) {
   const high = 720 + size * 120;
   osc.frequency.setValueAtTime(high, now);
   osc.frequency.exponentialRampToValueAtTime(150, now + 0.11);
-  gainEnvelope(ctx, gain, now, 0.13, 0.22);
+  gainEnvelope(gain, now, 0.13, 0.22);
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start(now);
@@ -71,7 +70,7 @@ export async function playReveal(open: boolean) {
     const gain = ctx.createGain();
     osc.type = "triangle";
     osc.frequency.value = notes[i];
-    gainEnvelope(ctx, gain, start, 0.18, 0.08);
+    gainEnvelope(gain, start, 0.18, 0.08);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(start);
