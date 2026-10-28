@@ -9,13 +9,14 @@ import { HealthHub } from "./screens/HealthHub";
 import { Routines } from "./screens/Routines";
 import { VoiceSettings } from "./screens/VoiceSettings";
 import { SleepV3 } from "./screens/SleepV3";
-import { MenuBuilderV3 } from "./screens/MenuBuilderV3";
+import { MenuBuilderVisual } from "./screens/MenuBuilderVisual";
 import { FirstAidKit } from "./screens/FirstAidKit";
 import { ChildV3 } from "./screens/ChildV3";
 import { GuideDetailV3 } from "./screens/GuideDetailV3";
 import { ManualsV3 } from "./screens/ManualsV3";
 import { NutritionHomeV3 } from "./screens/NutritionHomeV3";
 import { MoreV3 } from "./screens/MoreV3";
+import { RecipesV3, RecipeDetailV3, FortnightV3 } from "./screens/RecipesV3";
 import {
   Library,
   Favorites,
@@ -34,12 +35,7 @@ import {
   NotFound,
 } from "./screens/Knowledge";
 import { Diary, Growth, Temperature, Medicines } from "./screens/Journal";
-import {
-  Recipes,
-  RecipeDetail,
-  Fortnight,
-  SafeFood,
-} from "./screens/Nutrition";
+import { SafeFood } from "./screens/Nutrition";
 import { Weather } from "./screens/Weather";
 import { Repeat, Words } from "./screens/Audio";
 function readRoute() {
@@ -172,16 +168,16 @@ export default function App() {
       content = <Weather />;
       break;
     case "recipes":
-      content = <Recipes />;
+      content = <RecipesV3 />;
       break;
     case "recipe":
-      content = <RecipeDetail id={id} />;
+      content = <RecipeDetailV3 id={id} />;
       break;
     case "menu":
-      content = <Fortnight />;
+      content = <FortnightV3 />;
       break;
     case "menu-builder":
-      content = <MenuBuilderV3 />;
+      content = <MenuBuilderVisual />;
       break;
     case "safe-food":
       content = <SafeFood />;
