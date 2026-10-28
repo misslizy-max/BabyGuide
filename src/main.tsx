@@ -7,6 +7,10 @@ import "./v2.css";
 import "./health.css";
 import "./routines.css";
 import "./guide-visuals.css";
+import "./child-v3.css";
+import "./sleep-v3.css";
+import "./menu-v3.css";
+import "./kit-v3.css";
 createRoot(document.getElementById("app")!).render(
   <AppProvider>
     <App />
