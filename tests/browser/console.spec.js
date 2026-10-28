@@ -9,7 +9,7 @@ test("clean startup and parent/child navigation emit no console errors", async (
   });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Растём вместе.",
+    "Растём вместе",
   );
   for (const [route, heading] of [
     ["diary", "Дневник маленьких открытий"],
