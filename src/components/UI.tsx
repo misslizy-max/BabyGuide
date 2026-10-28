@@ -6,6 +6,7 @@ import {
   type FormEvent,
 } from "react";
 import { useApp } from "../hooks/useApp";
+import { speakRussian } from "../utils/speech";
 export const Link = ({
   to,
   children,
@@ -178,23 +179,28 @@ export function SpeechButton({
       setError("Синтез речи недоступен. Текст можно прочитать вслух.");
       return;
     }
-    window.speechSynthesis.cancel();
     if (playing) {
+      window.speechSynthesis.cancel();
       setPlaying(false);
       return;
     }
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "ru-RU";
-    speech.rate = 0.85;
-    speech.onend = () => setPlaying(false);
-    speech.onerror = () => {
-      setPlaying(false);
-      setError(
-        "Не удалось озвучить. Для русского голоса может потребоваться загрузка в настройках устройства.",
-      );
-    };
+    setError("");
     setPlaying(true);
-    window.speechSynthesis.speak(speech);
+    const started = speakRussian(text, {
+      rate: 0.78,
+      pitch: 1.04,
+      onEnd: () => setPlaying(false),
+      onError: () => {
+        setPlaying(false);
+        setError(
+          "Не удалось озвучить. Для русского голоса может потребоваться загрузка голоса в настройках устройства.",
+        );
+      },
+    });
+    if (!started) {
+      setPlaying(false);
+      setError("Синтез речи недоступен. Текст можно прочитать вслух.");
+    }
   }
   return (
     <>
