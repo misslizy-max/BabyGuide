@@ -6,7 +6,12 @@ import { newEvent } from "../services/persistence";
 import { putAudio, getAudio, deleteAudio } from "../services/audio";
 import { today, months, formatDate } from "../utils/dates";
 export function Repeat({ child = false }: { child?: boolean }) {
-  const rec = useRecorder();
+  const rec = useRecorder({
+    maxDurationMs: 20000,
+    silenceAfterSpeechMs: 2800,
+    initialSilenceMs: 5000,
+    soundThreshold: 0.022,
+  });
   const [mode, setMode] = useState("normal"),
     [playing, setPlaying] = useState(false),
     [playError, setPlayError] = useState("");
@@ -60,7 +65,7 @@ export function Repeat({ child = false }: { child?: boolean }) {
     rec.state === "permission"
       ? "Разрешите микрофон"
       : rec.state === "listening"
-        ? "Говори, я слушаю"
+        ? "Говори, я подожду"
         : playing
           ? "Повторяю!"
           : mode === "word"
@@ -72,7 +77,7 @@ export function Repeat({ child = false }: { child?: boolean }) {
       {!child && (
         <Heading
           title="Повторюшка"
-          sub="Один голосовой цикл: запись → остановка → повтор"
+          sub="Спокойный голосовой цикл: слушаю → жду паузу → повторяю"
           back="words"
         />
       )}
@@ -82,8 +87,9 @@ export function Repeat({ child = false }: { child?: boolean }) {
         </div>
         <h2 role="status">{text}</h2>
         <p>
-          Микрофон включается только по нажатию. Максимум 8 секунд или до паузы
-          после голоса. Во время повтора микрофон выключен.
+          После нажатия я не тороплю: даю до 20 секунд на ответ, не обрываю
+          первые 5 секунд и жду около 3 секунд тишины после речи. Во время
+          повтора микрофон выключен.
         </p>
         <div className="segmented">
           {[
@@ -117,7 +123,7 @@ export function Repeat({ child = false }: { child?: boolean }) {
             🎙{" "}
             {rec.state === "permission"
               ? "Ждём разрешение"
-              : "Разрешить микрофон и сказать"}
+              : "Слушай и повторяй"}
           </button>
         )}
         {rec.blob && !playing && (
