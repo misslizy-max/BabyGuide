@@ -9,11 +9,11 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-test("age guide exposes visual nutrition, routines and neural voice settings", async ({ page }) => {
+test("age guide exposes visual nutrition, routines and mom voice settings", async ({ page }) => {
   await go(page, "age-guide");
   await expect(page.locator(".routine-mini-flow")).toBeVisible();
   await expect(page.getByRole("link", { name: /Рутины и самообслуживание/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Настроить русский голос/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Настроить мамин голос/ })).toBeVisible();
 
   await go(page, "routines");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
@@ -31,8 +31,8 @@ test("age guide exposes visual nutrition, routines and neural voice settings", a
     "Голос BabyGuide",
   );
   await expect(page.locator(".natural-voice-card")).toBeVisible();
-  await expect(page.locator(".natural-voice-card")).toContainText(/Ирина|нейронный русский голос/i);
-  await expect(page.getByText("Запасной системный голос")).toBeVisible();
+  await expect(page.locator(".natural-voice-card")).toContainText(/Мамин голос|Лиза/i);
+  await expect(page.getByText("Послушать мамин голос")).toBeVisible();
 });
 
 test("Repeat explains adaptive background-noise calibration", async ({ page }) => {
