@@ -40,31 +40,20 @@ async function fishTts(text: string, env: Env): Promise<Response> {
         text,
         reference_id: env.FISH_AUDIO_REFERENCE_ID!.trim(),
         format: "mp3",
-        sample_rate: 44100,
-        mp3_bitrate: 128,
-        latency: "balanced",
-        prosody: {
-          speed: 1,
-          volume: 0,
-          normalize_loudness: true,
-        },
       }),
     });
 
     if (!upstream.ok) {
       const detail = (await upstream.text().catch(() => "")).slice(0, 800);
       console.error("Fish Audio TTS failed", upstream.status, detail);
-      return json(
-        {
-          ok: false,
-          stage: "fish-audio",
-          error: "Voice generation failed",
-          providerStatus: upstream.status,
-          providerDetail: detail || null,
-          bindings: status,
-        },
-        502,
-      );
+      return json({
+        ok: false,
+        stage: "fish-audio",
+        error: "Voice generation failed",
+        providerStatus: upstream.status,
+        providerDetail: detail || null,
+        bindings: status,
+      }, 502);
     }
 
     const audio = await upstream.arrayBuffer();
@@ -111,7 +100,6 @@ export default {
         return json({ ok: true, ...bindingStatus(env) });
       }
 
-      // Temporary safe browser diagnostic. It never exposes secret values.
       if (url.pathname === "/api/voice/test") {
         if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
         return fishTts("Привет, Женя! Это мама.", env);
