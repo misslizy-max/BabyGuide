@@ -19,25 +19,13 @@ function bindingStatus(env: Env) {
   };
 }
 
-async function voice(request: Request, env: Env): Promise<Response> {
+async function fishTts(text: string, env: Env): Promise<Response> {
   const status = bindingStatus(env);
   if (!status.apiKeyConfigured) {
-    return json({ error: "Fish Audio API key is not configured", ...status }, 503);
+    return json({ ok: false, stage: "bindings", error: "Fish Audio API key is not configured", ...status }, 503);
   }
   if (!status.referenceIdConfigured) {
-    return json({ error: "Fish Audio voice reference is not configured", ...status }, 503);
-  }
-
-  let body: { text?: unknown };
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "Invalid JSON" }, 400);
-  }
-
-  const text = typeof body.text === "string" ? body.text.trim() : "";
-  if (!text || text.length > 1200) {
-    return json({ error: "Text must contain 1–1200 characters" }, 400);
+    return json({ ok: false, stage: "bindings", error: "Fish Audio voice reference is not configured", ...status }, 503);
   }
 
   try {
@@ -64,12 +52,15 @@ async function voice(request: Request, env: Env): Promise<Response> {
     });
 
     if (!upstream.ok) {
-      const detail = await upstream.text().catch(() => "");
-      console.error("Fish Audio TTS failed", upstream.status, detail.slice(0, 500));
+      const detail = (await upstream.text().catch(() => "")).slice(0, 800);
+      console.error("Fish Audio TTS failed", upstream.status, detail);
       return json(
         {
+          ok: false,
+          stage: "fish-audio",
           error: "Voice generation failed",
           providerStatus: upstream.status,
+          providerDetail: detail || null,
           bindings: status,
         },
         502,
@@ -78,13 +69,13 @@ async function voice(request: Request, env: Env): Promise<Response> {
 
     const audio = await upstream.arrayBuffer();
     if (!audio.byteLength) {
-      return json({ error: "Fish Audio returned empty audio", bindings: status }, 502);
+      return json({ ok: false, stage: "fish-audio", error: "Fish Audio returned empty audio", bindings: status }, 502);
     }
 
     return new Response(audio, {
       status: 200,
       headers: {
-        "content-type": upstream.headers.get("content-type") || "audio/mpeg",
+        "content-type": "audio/mpeg",
         "content-length": String(audio.byteLength),
         "cache-control": "private, no-store",
         "x-content-type-options": "nosniff",
@@ -92,8 +83,23 @@ async function voice(request: Request, env: Env): Promise<Response> {
     });
   } catch (error) {
     console.error("Voice endpoint exception", error);
-    return json({ error: "Voice service is temporarily unavailable", bindings: status }, 502);
+    return json({ ok: false, stage: "network", error: "Voice service is temporarily unavailable", bindings: status }, 502);
   }
+}
+
+async function voice(request: Request, env: Env): Promise<Response> {
+  let body: { text?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "Invalid JSON" }, 400);
+  }
+
+  const text = typeof body.text === "string" ? body.text.trim() : "";
+  if (!text || text.length > 1200) {
+    return json({ error: "Text must contain 1–1200 characters" }, 400);
+  }
+  return fishTts(text, env);
 }
 
 export default {
@@ -101,9 +107,14 @@ export default {
     try {
       const url = new URL(request.url);
 
-      // Safe diagnostics: confirms bindings exist without ever exposing their values.
       if (url.pathname === "/api/voice/status") {
         return json({ ok: true, ...bindingStatus(env) });
+      }
+
+      // Temporary safe browser diagnostic. It never exposes secret values.
+      if (url.pathname === "/api/voice/test") {
+        if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
+        return fishTts("Привет, Женя! Это мама.", env);
       }
 
       if (url.pathname !== "/api/voice") {
