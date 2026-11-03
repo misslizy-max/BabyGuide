@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Heading, Link, Note } from "../components/UI";
 import { FoodVisual, MealPlateVisual } from "../components/FoodVisuals";
-import { foods, recipes } from "../data/nutrition";
+import { foods } from "../data/nutrition";
 import { candidates, foodMatches } from "../services/menu";
 import { useApp } from "../hooks/useApp";
 import { months } from "../utils/dates";
