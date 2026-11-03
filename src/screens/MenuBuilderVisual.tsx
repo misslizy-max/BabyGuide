@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Heading, Link, Note } from "../components/UI";
-import { RecipeHeroVisual } from "../components/RecipeVisuals";
+import { FoodVisual, MealPlateVisual } from "../components/FoodVisuals";
 import { recipes, foods } from "../data/nutrition";
 import { candidates, foodMatches } from "../services/menu";
 import { useApp } from "../hooks/useApp";
@@ -12,12 +12,12 @@ type PlanCell = { day: number; slot: MealSlot; recipeId: string };
 type SavedPlan = { days: number; selectedSlots: MealSlot[]; cells: PlanCell[] };
 const STORAGE = "babyguide.menu.v3";
 
-const mealSlots: { id: MealSlot; label: string; icon: string }[] = [
-  { id: "breakfast", label: "Завтрак", icon: "🥣" },
-  { id: "snack", label: "Перекус", icon: "🍐" },
-  { id: "lunch", label: "Обед", icon: "🍲" },
-  { id: "afternoon", label: "Полдник", icon: "🥛" },
-  { id: "dinner", label: "Ужин", icon: "🍽️" },
+const mealSlots: { id: MealSlot; label: string; visualId: string }[] = [
+  { id: "breakfast", label: "Завтрак", visualId: "oats" },
+  { id: "snack", label: "Перекус", visualId: "pear" },
+  { id: "lunch", label: "Обед", visualId: "chicken" },
+  { id: "afternoon", label: "Полдник", visualId: "yogurt" },
+  { id: "dinner", label: "Ужин", visualId: "zucchini" },
 ];
 
 function slotName(slot: MealSlot) {
@@ -134,12 +134,12 @@ export function MenuBuilderVisual() {
 
   return (
     <div className="menu-builder-v3 menu-builder-visual">
-      <Heading title="Конструктор меню" sub="1–14 дней · завтрак, перекус, обед, полдник и ужин · замены и список покупок" back="nutrition" />
+      <Heading title="Конструктор меню" sub={age===null?"Укажите дату рождения — меню строится по возрасту ребёнка":"1–14 дней · рекомендации для возраста из настроек · 5 приёмов пищи"} back="nutrition" />
       <section className="menu-setup-card">
-        <div className="menu-setup-visual visual-v4 menu-real-food-preview" aria-hidden="true"><span className="menu-real-dish">🍽️</span><span className="menu-real-food food-one">🥕</span><span className="menu-real-food food-two">🍗</span><span className="menu-real-food food-three">🥒</span></div>
-        <div className="menu-setup-copy"><p className="eyebrow">ШАГ 1</p><h2>Собираем под ребёнка</h2><p>Возраст, введённые продукты, то, что уже есть дома, скорость приготовления и повторы учитываются до генерации.</p></div>
+        <div className="menu-setup-visual visual-v4 menu-real-food-preview"><MealPlateVisual foods={["carrot","chicken","zucchini"]} label="Пример готового блюда" /></div>
+        <div className="menu-setup-copy"><p className="eyebrow">ШАГ 1</p><h2>{age===null?"Сначала укажите возраст":`Собираем меню для ${age} мес.`}</h2><p>Возраст, введённые продукты, то, что уже есть дома, скорость приготовления, аллергии и повторы учитываются до генерации.</p></div>
         <div className="menu-day-pills">{[1,3,7,14].map((value)=><button key={value} className={days===value?"selected":""} onClick={()=>setDays(value)}>{value}<small>{value===1?"день":value<5?"дня":"дней"}</small></button>)}</div>
-        <div className="menu-slot-pills menu-slot-pills-five">{mealSlots.map((item)=><label key={item.id}><input type="checkbox" checked={selectedSlots.includes(item.id)} onChange={()=>setSelectedSlots((old)=>old.includes(item.id)?old.filter((value)=>value!==item.id):[...old,item.id])}/><span><b>{item.icon}</b>{item.label}</span></label>)}</div>
+        <div className="menu-slot-pills menu-slot-pills-five">{mealSlots.map((item)=><label key={item.id}><input type="checkbox" checked={selectedSlots.includes(item.id)} onChange={()=>setSelectedSlots((old)=>old.includes(item.id)?old.filter((value)=>value!==item.id):[...old,item.id])}/><span><FoodVisual id={item.visualId}/>{item.label}</span></label>)}</div>
         <div className="menu-rule-grid">
           <label><input type="checkbox" checked={onlyIntroduced} onChange={(event)=>setOnlyIntroduced(event.target.checked)}/><span><strong>Только введённые</strong><small>Особенно важно до года</small></span></label>
           <label><input type="checkbox" checked={pantryOnly} onChange={(event)=>setPantryOnly(event.target.checked)}/><span><strong>Только из продуктов дома</strong><small>Сверяемся с профилем</small></span></label>
@@ -153,12 +153,12 @@ export function MenuBuilderVisual() {
       {cells.length > 0 && <>
         <div className="menu-result-tabs"><button className={tab==="plan"?"selected":""} onClick={()=>setTab("plan")}>Меню</button><button className={tab==="shopping"?"selected":""} onClick={()=>setTab("shopping")}>Список покупок <span>{shopping.length}</span></button></div>
         {tab === "plan" ? (
-          <div className="menu-days-v3">{Array.from({length:days},(_,day)=><section key={day} className="menu-day-v3"><div className="menu-day-title"><span>{day+1}</span><div><small>ДЕНЬ</small><h2>{new Intl.DateTimeFormat("ru-RU",{weekday:"long"}).format(new Date(Date.now()+day*86400000))}</h2></div></div><div className="menu-meals-v3">{selectedSlots.map((slot)=>{const cell=cells.find((item)=>item.day===day&&item.slot===slot);const recipe=recipes.find((item)=>item.id===cell?.recipeId);return <article key={slot} className="menu-meal-v3 visual-meal-v3">{recipe?<><RecipeHeroVisual recipe={recipe} compact/><div className="menu-meal-copy"><small>{slotName(slot)}</small><h3>{recipe.name}</h3><p>{recipe.minutes} мин · от {recipe.minAge} мес.</p><div><Link to={`recipe/${recipe.id}`} className="text-link">Рецепт и подача →</Link><button onClick={()=>replaceCell(day,slot)}>↻ заменить</button></div></div></>:<div className="menu-empty"><strong>{slotName(slot)}</strong><p>Нет блюда, которое проходит все выбранные ограничения.</p></div>}</article>})}</div></section>)}</div>
+          <div className="menu-days-v3">{Array.from({length:days},(_,day)=><section key={day} className="menu-day-v3"><div className="menu-day-title"><span>{day+1}</span><div><small>ДЕНЬ</small><h2>{new Intl.DateTimeFormat("ru-RU",{weekday:"long"}).format(new Date(Date.now()+day*86400000))}</h2></div></div><div className="menu-meals-v3">{selectedSlots.map((slot)=>{const cell=cells.find((item)=>item.day===day&&item.slot===slot);const recipe=recipes.find((item)=>item.id===cell?.recipeId);return <article key={slot} className="menu-meal-v3 visual-meal-v3">{recipe?<><div className="menu-meal-real-visual"><MealPlateVisual foods={recipe.ingredients.filter((item)=>!["water","oil"].includes(item.id)).slice(0,3).map((item)=>item.id)} label={recipe.name}/></div><div className="menu-meal-copy"><small>{slotName(slot)}</small><h3>{recipe.name}</h3><p>{recipe.minutes} мин · от {recipe.minAge} мес.</p><div><Link to={`recipe/${recipe.id}`} className="text-link">Рецепт и подача →</Link><button onClick={()=>replaceCell(day,slot)}>↻ заменить</button></div></div></>:<div className="menu-empty"><strong>{slotName(slot)}</strong><p>Нет блюда, которое проходит все выбранные ограничения.</p></div>}</article>})}</div></section>)}</div>
         ) : (
           <section className="shopping-v3"><div className="shopping-hero"><div><p className="eyebrow">СПИСОК ПОКУПОК</p><h2>{shopping.length} позиций</h2><p>То, что отмечено «есть дома», уже исключено.</p></div><div className="shopping-bag" aria-hidden="true"><i/><b/></div></div><div className="shopping-list-v3">{shopping.map((item)=><label key={item.id}><input type="checkbox"/><span><strong>{item.name}</strong><small>{Math.round(item.grams)} {item.unit} · в {item.used} блюд.</small></span></label>)}</div>{!shopping.length&&<Note>Покупать ничего не нужно либо меню пока пустое.</Note>}</section>
         )}
       </>}
-      <Note>Полдник использует лёгкие блюда из категории перекуса, но сохраняется в меню как отдельный пятый приём пищи. Конструктор не заменяет лечебную диету.</Note>
+      <Note>Полдник использует лёгкие блюда из категории перекуса, но сохраняется как отдельный пятый приём пищи. Все блюда фильтруются по возрасту ребёнка из профиля.</Note>
     </div>
   );
 }
