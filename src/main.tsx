@@ -16,6 +16,7 @@ import "./kit-v3.css";
 import "./guide-v3.css";
 import "./manuals-v3.css";
 import "./nutrition-v3.css";
+import "./nutrition-builder-v4.css";
 import "./more-v3.css";
 import "./today-v3.css";
 import "./quick-add-v3.css";
