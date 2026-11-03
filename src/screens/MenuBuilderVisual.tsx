@@ -44,7 +44,10 @@ export function MenuBuilderVisual() {
   const age = months(profile.birth);
   const saved = useMemo(loadSaved, []);
   const [days, setDays] = useState(saved?.days || 7);
-  const [selectedSlots, setSelectedSlots] = useState<MealSlot[]>(saved?.selectedSlots?.length ? saved.selectedSlots : mealSlots.map((item) => item.id));
+  const [selectedSlots, setSelectedSlots] = useState<MealSlot[]>(() => {
+    const existing = saved?.selectedSlots?.length ? saved.selectedSlots : mealSlots.map((item) => item.id);
+    return existing.includes("afternoon") ? existing : [...existing, "afternoon"];
+  });
   const [onlyIntroduced, setOnlyIntroduced] = useState(age !== null && age < 12);
   const [pantryOnly, setPantryOnly] = useState(false);
   const [quickOnly, setQuickOnly] = useState(false);
